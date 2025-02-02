@@ -19,4 +19,23 @@ Datasets list:
 - [DTD](#dtd)
 
 
-The instructions to prepare each dataset are detailed below. To ensure reproducibility and fair comparison for future work, we provide fixed train/val/test splits for all datasets except ImageNet where the validation set is use
+The instructions to prepare each dataset are detailed below. To ensure reproducibility and fair comparison for future work, we provide fixed train/val/test splits for all datasets except ImageNet where the validation set is used as test set. The fixed splits are either from the original datasets (if available) or created by us.
+
+
+### Caltech101
+- Create a folder named `caltech-101/` under `$DATA`.
+- Download `101_ObjectCategories.tar.gz` from http://www.vision.caltech.edu/Image_Datasets/Caltech101/101_ObjectCategories.tar.gz and extract the file under `$DATA/caltech-101`.
+- Download `split_zhou_Caltech101.json` from this [link](https://drive.google.com/file/d/1hyarUivQE36mY6jSomru6Fjd-JzwcCzN/view?usp=sharing) and put it under `$DATA/caltech-101`. 
+
+The directory structure should look like
+```
+caltech-101/
+|–– 101_ObjectCategories/
+|–– split_zhou_Caltech101.json
+```
+
+### OxfordPets
+- Create a folder named `oxford_pets/` under `$DATA`.
+- Download the images from https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz.
+- Download the annotations from https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz.
+- Download `split_zhou_OxfordPets.json` fr
