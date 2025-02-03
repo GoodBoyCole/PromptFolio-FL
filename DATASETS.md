@@ -64,4 +64,28 @@ oxford_flowers/
 ```
 
 ### Food101
-- Download the dataset from https://data.vision.
+- Download the dataset from https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/ and extract the file `food-101.tar.gz` under `$DATA`, resulting in a folder named `$DATA/food-101/`.
+- Download `split_zhou_Food101.json` from [here](https://drive.google.com/file/d/1QK0tGi096I0Ba6kggatX1ee6dJFIcEJl/view?usp=sharing).
+
+The directory structure should look like
+```
+food-101/
+|–– images/
+|–– license_agreement.txt
+|–– meta/
+|–– README.txt
+|–– split_zhou_Food101.json
+```
+
+### DTD
+- Download the dataset from https://www.robots.ox.ac.uk/~vgg/data/dtd/download/dtd-r1.0.1.tar.gz and extract it to `$DATA`. This should lead to `$DATA/dtd/`.
+- Download `split_zhou_DescribableTextures.json` from this [link](https://drive.google.com/file/d/1u3_QfB467jqHgNXC00UIzbLZRQCg2S7x/view?usp=sharing).
+
+The directory structure should look like
+```
+dtd/
+|–– images/
+|–– imdb/
+|–– labels/
+|–– split_zhou_DescribableTextures.json
+```
