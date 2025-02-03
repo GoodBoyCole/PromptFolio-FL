@@ -16,4 +16,37 @@ class EvaluatorBase:
     def reset(self):
         raise NotImplementedError
 
-    def process(sel
+    def process(self, mo, gt):
+        raise NotImplementedError
+
+    def evaluate(self):
+        raise NotImplementedError
+
+
+@EVALUATOR_REGISTRY.register()
+class Classification(EvaluatorBase):
+    """Evaluator for classification."""
+
+    def __init__(self, cfg, lab2cname=None, **kwargs):
+        super().__init__(cfg)
+        self._lab2cname = lab2cname
+        self._correct = 0
+        self._total = 0
+        self._per_class_res = None
+        self._y_true = []
+        self._y_pred = []
+        if cfg.TEST.PER_CLASS_RESULT:
+            assert lab2cname is not None
+            self._per_class_res = defaultdict(list)
+
+    def reset(self):
+        self._correct = 0
+        self._total = 0
+        self._y_true = []
+        self._y_pred = []
+        if self._per_class_res is not None:
+            self._per_class_res = defaultdict(list)
+
+    def process(self, mo, gt):
+        # mo (torch.Tensor): model output [batch, num_classes]
+        # gt (torch.LongTensor): ground truth [
