@@ -38,4 +38,30 @@ caltech-101/
 - Create a folder named `oxford_pets/` under `$DATA`.
 - Download the images from https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz.
 - Download the annotations from https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz.
-- Download `split_zhou_OxfordPets.json` fr
+- Download `split_zhou_OxfordPets.json` from this [link](https://drive.google.com/file/d/1501r8Ber4nNKvmlFVQZ8SeUHTcdTTEqs/view?usp=sharing). 
+
+The directory structure should look like
+```
+oxford_pets/
+|–– images/
+|–– annotations/
+|–– split_zhou_OxfordPets.json
+```
+
+### Flowers102
+- Create a folder named `oxford_flowers/` under `$DATA`.
+- Download the images and labels from https://www.robots.ox.ac.uk/~vgg/data/flowers/102/102flowers.tgz and https://www.robots.ox.ac.uk/~vgg/data/flowers/102/imagelabels.mat respectively.
+- Download `cat_to_name.json` from [here](https://drive.google.com/file/d/1AkcxCXeK_RCGCEC_GvmWxjcjaNhu-at0/view?usp=sharing). 
+- Download `split_zhou_OxfordFlowers.json` from [here](https://drive.google.com/file/d/1Pp0sRXzZFZq15zVOzKjKBu4A9i01nozT/view?usp=sharing).
+
+The directory structure should look like
+```
+oxford_flowers/
+|–– cat_to_name.json
+|–– imagelabels.mat
+|–– jpg/
+|–– split_zhou_OxfordFlowers.json
+```
+
+### Food101
+- Download the dataset from https://data.vision.
