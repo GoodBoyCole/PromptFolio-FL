@@ -139,3 +139,68 @@ class RandomClassSampler(Sampler):
         self.n_ins = n_ins
         self.ncls_per_batch = self.batch_size // self.n_ins
         self.index_dic = defaultdict(list)
+        for index, item in enumerate(data_source):
+            self.index_dic[item.label].append(index)
+        self.labels = list(self.index_dic.keys())
+        assert len(self.labels) >= self.ncls_per_batch
+
+        # estimate number of images in an epoch
+        self.length = len(list(self.__iter__()))
+
+    def __iter__(self):
+        batch_idxs_dict = defaultdict(list)
+
+        for label in self.labels:
+            idxs = copy.deepcopy(self.index_dic[label])
+            if len(idxs) < self.n_ins:
+                idxs = np.random.choice(idxs, size=self.n_ins, replace=True)
+            random.shuffle(idxs)
+            batch_idxs = []
+            for idx in idxs:
+                batch_idxs.append(idx)
+                if len(batch_idxs) == self.n_ins:
+                    batch_idxs_dict[label].append(batch_idxs)
+                    batch_idxs = []
+
+        avai_labels = copy.deepcopy(self.labels)
+        final_idxs = []
+
+        while len(avai_labels) >= self.ncls_per_batch:
+            selected_labels = random.sample(avai_labels, self.ncls_per_batch)
+            for label in selected_labels:
+                batch_idxs = batch_idxs_dict[label].pop(0)
+                final_idxs.extend(batch_idxs)
+                if len(batch_idxs_dict[label]) == 0:
+                    avai_labels.remove(label)
+
+        return iter(final_idxs)
+
+    def __len__(self):
+        return self.length
+
+
+def build_sampler(
+    sampler_type,
+    cfg=None,
+    data_source=None,
+    batch_size=32,
+    n_domain=0,
+    n_ins=16
+):
+    if sampler_type == "RandomSampler":
+        return RandomSampler(data_source)
+
+    elif sampler_type == "SequentialSampler":
+        return SequentialSampler(data_source)
+
+    elif sampler_type == "RandomDomainSampler":
+        return RandomDomainSampler(data_source, batch_size, n_domain)
+
+    elif sampler_type == "SeqDomainSampler":
+        return SeqDomainSampler(data_source, batch_size)
+
+    elif sampler_type == "RandomClassSampler":
+        return RandomClassSampler(data_source, batch_size, n_ins)
+
+    else:
+        raise ValueError("Unknown sampler type: {}".format(sampler_type))
