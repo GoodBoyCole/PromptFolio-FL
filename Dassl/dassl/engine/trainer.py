@@ -811,3 +811,23 @@ class TrainerX(SimpleTrainer):
             # print(f"logits: {logits.shape}")
             total = logits.size(0)
             topk_num = int(total * budget)
+            # when budget == 1, the selected mask will choose all samples.
+            # print(f"topk_num: {topk_num}, max_values: {max_values}")
+            # print(f"max_values: {max_values}")
+            _, topk_indices = torch.topk(max_values, topk_num)
+            # print(f"topk_indices: {topk_indices}")
+            selected_mask = torch.zeros((total,), dtype=torch.bool).cuda()
+            selected_mask[topk_indices] = True
+            all_selected_mask[index] = selected_mask
+            # print(f'selected_mask: {selected_mask}')
+            # row_sum = torch.sum(couplings, 1).reshape((-1,1))
+            pseudo_labels = logits
+            max_value, argmax_plabels = torch.max(logits, axis=1)
+            conf = max_value / (1/logits.size(0))
+            conf = torch.clip(conf, min=0, max=1.0)
+
+            all_conf[index] = conf
+            all_pseudo_labels[index, :] = pseudo_labels
+            all_argmax_plabels[index] = argmax_plabels
+
+        return all_pseudo_labels, all_noisy_labels, all_gt_labels, all_selected_mask, all_conf, all_argmax_plabels
