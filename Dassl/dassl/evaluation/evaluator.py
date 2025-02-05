@@ -49,4 +49,33 @@ class Classification(EvaluatorBase):
 
     def process(self, mo, gt):
         # mo (torch.Tensor): model output [batch, num_classes]
-        # gt (torch.LongTensor): ground truth [
+        # gt (torch.LongTensor): ground truth [batch]
+        pred = mo.max(1)[1]
+        matches = pred.eq(gt).float()
+        self._correct += int(matches.sum().item())
+        self._total += gt.shape[0]
+
+        self._y_true.extend(gt.data.cpu().numpy().tolist())
+        self._y_pred.extend(pred.data.cpu().numpy().tolist())
+
+        if self._per_class_res is not None:
+            for i, label in enumerate(gt):
+                label = label.item()
+                matches_i = int(matches[i].item())
+                self._per_class_res[label].append(matches_i)
+
+    def evaluate(self):
+        results = OrderedDict()
+        acc = 100.0 * self._correct / self._total
+        err = 100.0 - acc
+        macro_f1 = 100.0 * f1_score(
+            self._y_true,
+            self._y_pred,
+            average="macro",
+            labels=np.unique(self._y_true)
+        )
+
+        # The first value will be returned by trainer.test()
+        results["accuracy"] = acc
+        results["error_rate"] = err
+ 
