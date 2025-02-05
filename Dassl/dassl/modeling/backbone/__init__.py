@@ -18,4 +18,7 @@ from .resnet import (
 #     efficientnet_b4, efficientnet_b5, efficientnet_b6, efficientnet_b7
 # )
 # from .resnet_dynamic import *
-# from .cnn_digitsingle import cnn_dig
+# from .cnn_digitsingle import cnn_digitsingle
+# from .preact_resnet18 import preact_resnet18
+# from .cnn_digit5_m3sda import cnn_digit5_m3sda
+from .models_vit import vit_base_patch16
