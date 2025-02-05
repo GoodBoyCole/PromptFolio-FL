@@ -78,4 +78,33 @@ class Classification(EvaluatorBase):
         # The first value will be returned by trainer.test()
         results["accuracy"] = acc
         results["error_rate"] = err
- 
+        results["macro_f1"] = macro_f1
+
+        print(
+            "=> result\n"
+            f"* total: {self._total:,}\n"
+            f"* correct: {self._correct:,}\n"
+            f"* accuracy: {acc:.1f}%\n"
+            f"* error: {err:.1f}%\n"
+            f"* macro_f1: {macro_f1:.1f}%"
+        )
+
+        if self._per_class_res is not None:
+            labels = list(self._per_class_res.keys())
+            labels.sort()
+
+            print("=> per-class result")
+            accs = []
+
+            for label in labels:
+                classname = self._lab2cname[label]
+                res = self._per_class_res[label]
+                correct = sum(res)
+                total = len(res)
+                acc = 100.0 * correct / total
+                accs.append(acc)
+                print(
+                    f"* class: {label} ({classname})\t"
+                    f"total: {total:,}\t"
+                    f"correct: {correct:,}\t"
+                    f"acc: {acc
