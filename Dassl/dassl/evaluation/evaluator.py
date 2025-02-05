@@ -107,4 +107,19 @@ class Classification(EvaluatorBase):
                     f"* class: {label} ({classname})\t"
                     f"total: {total:,}\t"
                     f"correct: {correct:,}\t"
-                    f"acc: {acc
+                    f"acc: {acc:.1f}%"
+                )
+            mean_acc = np.mean(accs)
+            print(f"* average: {mean_acc:.1f}%")
+
+            results["perclass_accuracy"] = mean_acc
+
+        if self.cfg.TEST.COMPUTE_CMAT:
+            cmat = confusion_matrix(
+                self._y_true, self._y_pred, normalize="true"
+            )
+            save_path = osp.join(self.cfg.OUTPUT_DIR, "cmat.pt")
+            torch.save(cmat, save_path)
+            print(f"Confusion matrix is saved to {save_path}")
+
+        return results
