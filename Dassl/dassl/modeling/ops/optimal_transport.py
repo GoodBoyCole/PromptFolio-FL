@@ -25,4 +25,37 @@ class OptimalTransport(nn.Module):
             batch2 = batch2.unsqueeze(-3)
             dist_mat = torch.sum((torch.abs(batch1 - batch2))**2, -1)
         else:
-            raise 
+            raise ValueError(
+                "Unknown cost function: {}. Expected to "
+                "be one of [cosine | euclidean]".format(dist_metric)
+            )
+        return dist_mat
+
+
+class SinkhornDivergence(OptimalTransport):
+    thre = 1e-3
+
+    def __init__(
+        self,
+        dist_metric="cosine",
+        eps=0.01,
+        max_iter=5,
+        bp_to_sinkhorn=False
+    ):
+        super().__init__()
+        self.dist_metric = dist_metric
+        self.eps = eps
+        self.max_iter = max_iter
+        self.bp_to_sinkhorn = bp_to_sinkhorn
+
+    def forward(self, x, y):
+        # x, y: two batches of data with shape (batch, dim)
+        W_xy = self.transport_cost(x, y)
+        W_xx = self.transport_cost(x, x)
+        W_yy = self.transport_cost(y, y)
+        return 2*W_xy - W_xx - W_yy
+
+    def transport_cost(self, x, y, return_pi=False):
+        C = self.distance(x, y, dist_metric=self.dist_metric)
+        pi = self.sinkhorn_iterate(C, self.eps, self.max_iter, self.thre)
+        if n
