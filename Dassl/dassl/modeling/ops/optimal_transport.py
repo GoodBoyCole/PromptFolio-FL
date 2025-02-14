@@ -58,4 +58,30 @@ class SinkhornDivergence(OptimalTransport):
     def transport_cost(self, x, y, return_pi=False):
         C = self.distance(x, y, dist_metric=self.dist_metric)
         pi = self.sinkhorn_iterate(C, self.eps, self.max_iter, self.thre)
-        if n
+        if not self.bp_to_sinkhorn:
+            pi = pi.detach()
+        cost = torch.sum(pi * C)
+        if return_pi:
+            return cost, pi
+        return cost
+
+    @staticmethod
+    def sinkhorn_iterate(C, eps, max_iter, thre):
+        nx, ny = C.shape
+        mu = torch.ones(nx, dtype=C.dtype, device=C.device) * (1.0/nx)
+        nu = torch.ones(ny, dtype=C.dtype, device=C.device) * (1.0/ny)
+        u = torch.zeros_like(mu)
+        v = torch.zeros_like(nu)
+
+        def M(_C, _u, _v):
+            """Modified cost for logarithmic updates.
+            Eq: M_{ij} = (-c_{ij} + u_i + v_j) / epsilon
+            """
+            return (-_C + _u.unsqueeze(-1) + _v.unsqueeze(-2)) / eps
+
+        real_iter = 0  # check if algorithm terminates before max_iter
+        # Sinkhorn iterations
+        for i in range(max_iter):
+            u0 = u
+            u = eps * (
+                torch.log(mu + 1e-8) - torch.logsumexp(M(C, u, v),
