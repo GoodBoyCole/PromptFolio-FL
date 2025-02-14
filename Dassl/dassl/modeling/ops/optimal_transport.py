@@ -84,4 +84,39 @@ class SinkhornDivergence(OptimalTransport):
         for i in range(max_iter):
             u0 = u
             u = eps * (
-                torch.log(mu + 1e-8) - torch.logsumexp(M(C, u, v),
+                torch.log(mu + 1e-8) - torch.logsumexp(M(C, u, v), dim=1)
+            ) + u
+            v = (
+                eps * (
+                    torch.log(nu + 1e-8) -
+                    torch.logsumexp(M(C, u, v).permute(1, 0), dim=1)
+                ) + v
+            )
+            err = (u - u0).abs().sum()
+            real_iter += 1
+            if err.item() < thre:
+                break
+        # Transport plan pi = diag(a)*K*diag(b)
+        return torch.exp(M(C, u, v))
+
+
+class MinibatchEnergyDistance(SinkhornDivergence):
+
+    def __init__(
+        self,
+        dist_metric="cosine",
+        eps=0.01,
+        max_iter=5,
+        bp_to_sinkhorn=False
+    ):
+        super().__init__(
+            dist_metric=dist_metric,
+            eps=eps,
+            max_iter=max_iter,
+            bp_to_sinkhorn=bp_to_sinkhorn,
+        )
+
+    def forward(self, x, y):
+        x1, x2 = torch.split(x, x.size(0) // 2, dim=0)
+        y1, y2 = torch.split(y, y.size(0) // 2, dim=0)
+        c
