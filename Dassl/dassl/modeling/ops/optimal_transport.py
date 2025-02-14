@@ -119,4 +119,29 @@ class MinibatchEnergyDistance(SinkhornDivergence):
     def forward(self, x, y):
         x1, x2 = torch.split(x, x.size(0) // 2, dim=0)
         y1, y2 = torch.split(y, y.size(0) // 2, dim=0)
-        c
+        cost = 0
+        cost += self.transport_cost(x1, y1)
+        cost += self.transport_cost(x1, y2)
+        cost += self.transport_cost(x2, y1)
+        cost += self.transport_cost(x2, y2)
+        cost -= 2 * self.transport_cost(x1, x2)
+        cost -= 2 * self.transport_cost(y1, y2)
+        return cost
+
+
+if __name__ == "__main__":
+    # example: https://dfdazac.github.io/sinkhorn.html
+    import numpy as np
+
+    n_points = 5
+    a = np.array([[i, 0] for i in range(n_points)])
+    b = np.array([[i, 1] for i in range(n_points)])
+    x = torch.tensor(a, dtype=torch.float)
+    y = torch.tensor(b, dtype=torch.float)
+    sinkhorn = SinkhornDivergence(
+        dist_metric="euclidean", eps=0.01, max_iter=5
+    )
+    dist, pi = sinkhorn.transport_cost(x, y, True)
+    import pdb
+
+    pdb.set_trace()
