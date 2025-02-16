@@ -47,4 +47,27 @@ class Logger:
 
     def flush(self):
         self.console.flush()
-        if self.file is 
+        if self.file is not None:
+            self.file.flush()
+            os.fsync(self.file.fileno())
+
+    def close(self):
+        self.console.close()
+        if self.file is not None:
+            self.file.close()
+
+
+def setup_logger(output=None):
+    if output is None:
+        return
+
+    if output.endswith(".txt") or output.endswith(".log"):
+        fpath = output
+    else:
+        fpath = osp.join(output, "log.txt")
+
+    if osp.exists(fpath):
+        # make sure the existing log file is not over-written
+        fpath += time.strftime("-%Y-%m-%d-%H-%M-%S")
+
+    sys.stdout = Logger(fpath)
