@@ -53,3 +53,17 @@ class Registry:
             return wrapper
 
         # Used as a function call
+        name = obj.__name__
+        self._do_register(name, obj, force=force)
+
+    def get(self, name):
+        if name not in self._obj_map:
+            raise KeyError(
+                'Object name "{}" does not exist '
+                'in "{}" registry'.format(name, self._name)
+            )
+
+        return self._obj_map[name]
+
+    def registered_names(self):
+        return list(self._obj_map.keys())
