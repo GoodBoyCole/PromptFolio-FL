@@ -109,4 +109,47 @@ def download_url(url, dst):
 
 
 def read_image(path):
-    """Re
+    """Read image from path using ``PIL.Image``.
+
+    Args:
+        path (str): path to an image.
+
+    Returns:
+        PIL image
+    """
+    return Image.open(path).convert("RGB")
+
+
+def collect_env_info():
+    """Return env info as a string.
+
+    Code source: github.com/facebookresearch/maskrcnn-benchmark
+    """
+    from torch.utils.collect_env import get_pretty_env_info
+
+    env_str = get_pretty_env_info()
+    env_str += "\n        Pillow ({})".format(PIL.__version__)
+    return env_str
+
+
+def listdir_nohidden(path, sort=False):
+    """List non-hidden items in a directory.
+
+    Args:
+         path (str): directory path.
+         sort (bool): sort the items.
+    """
+    items = [f for f in os.listdir(path) if not f.startswith(".")]
+    if sort:
+        items.sort()
+    return items
+
+
+def get_most_similar_str_to_a_from_b(a, b):
+    """Return the most similar string to a in b.
+
+    Args:
+        a (str): probe string.
+        b (list): a list of candidate strings.
+    """
+    highest_si
