@@ -41,4 +41,35 @@ def create_onehot(label, num_classes):
 def sigmoid_rampup(current, rampup_length):
     """Exponential rampup.
 
-    Arg
+    Args:
+        current (int): current step.
+        rampup_length (int): maximum step.
+    """
+    assert rampup_length > 0
+    current = np.clip(current, 0.0, rampup_length)
+    phase = 1.0 - current/rampup_length
+    return float(np.exp(-5.0 * phase * phase))
+
+
+def linear_rampup(current, rampup_length):
+    """Linear rampup.
+
+    Args:
+        current (int): current step.
+        rampup_length (int): maximum step.
+    """
+    assert rampup_length > 0
+    ratio = np.clip(current / rampup_length, 0.0, 1.0)
+    return float(ratio)
+
+
+def ema_model_update(model, ema_model, alpha):
+    """Exponential moving average of model parameters.
+
+    Args:
+        model (nn.Module): model being trained.
+        ema_model (nn.Module): ema of the model.
+        alpha (float): ema decay rate.
+    """
+    for ema_param, param in zip(ema_model.parameters(), model.parameters()):
+        ema_param.data.mul_(alpha).add_(param.data, alpha=1 - alpha)
