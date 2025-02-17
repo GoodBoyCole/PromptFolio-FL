@@ -152,4 +152,36 @@ def get_most_similar_str_to_a_from_b(a, b):
         a (str): probe string.
         b (list): a list of candidate strings.
     """
-    highest_si
+    highest_sim = 0
+    chosen = None
+    for candidate in b:
+        sim = SequenceMatcher(None, a, candidate).ratio()
+        if sim >= highest_sim:
+            highest_sim = sim
+            chosen = candidate
+    return chosen
+
+
+def check_availability(requested, available):
+    """Check if an element is available in a list.
+
+    Args:
+        requested (str): probe string.
+        available (list): a list of available strings.
+    """
+    # print("requested",requested)
+    # print("available",available)
+    if requested not in available:
+        psb_ans = get_most_similar_str_to_a_from_b(requested, available)
+        raise ValueError(
+            "The requested one is expected "
+            "to belong to {}, but got [{}] "
+            "(do you mean [{}]?)".format(available, requested, psb_ans)
+        )
+
+
+def tolist_if_not(x):
+    """Convert to a list."""
+    if not isinstance(x, list):
+        x = [x]
+    return x
