@@ -42,4 +42,28 @@ def main():
     )
     parser.add_argument("text_to_search", type=str, help="name to be replaced")
     parser.add_argument("replacement_text", type=str, help="new name")
-    pa
+    parser.add_argument(
+        "--ext", type=str, default=".py", help="file extension"
+    )
+    args = parser.parse_args()
+
+    file_or_dir = args.file_or_dir
+    text_to_search = args.text_to_search
+    replacement_text = args.replacement_text
+    extension = args.ext
+
+    global EXTENSION
+    EXTENSION = extension
+
+    if osp.isfile(file_or_dir):
+        if not is_python_file(file_or_dir):
+            return
+        update_file(file_or_dir, text_to_search, replacement_text)
+    elif osp.isdir(file_or_dir):
+        recursive_update(file_or_dir, text_to_search, replacement_text)
+    else:
+        raise NotImplementedError
+
+
+if __name__ == "__main__":
+    main()
