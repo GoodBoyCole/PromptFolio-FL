@@ -97,4 +97,37 @@ def main(args):
         set_random_seed(cfg.SEED)
     setup_logger(cfg.OUTPUT_DIR)
 
-    if torc
+    if torch.cuda.is_available() and cfg.USE_CUDA:
+        torch.backends.cudnn.benchmark = True
+
+    print_args(args, cfg)
+    print("Collecting env info ...")
+    print("** System info **\n{}\n".format(collect_env_info()))
+
+    trainer = build_trainer(cfg)
+
+    if args.eval_only:
+        trainer.load_model(args.model_dir, epoch=args.load_epoch)
+        trainer.test()
+        return
+
+    if not args.no_train:
+        trainer.train()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--root", type=str, default="", help="path to dataset")
+    parser.add_argument(
+        "--output-dir", type=str, default="", help="output directory"
+    )
+    parser.add_argument(
+        "--resume",
+        type=str,
+        default="",
+        help="checkpoint directory (from which the training resumes)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+ 
