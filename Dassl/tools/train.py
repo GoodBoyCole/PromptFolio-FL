@@ -130,4 +130,37 @@ if __name__ == "__main__":
     parser.add_argument(
         "--seed",
         type=int,
- 
+        default=-1,
+        help="only positive value enables a fixed seed"
+    )
+    parser.add_argument(
+        "--source-domains",
+        type=str,
+        nargs="+",
+        help="source domains for DA/DG"
+    )
+    parser.add_argument(
+        "--target-domains",
+        type=str,
+        nargs="+",
+        help="target domains for DA/DG"
+    )
+    parser.add_argument(
+        "--transforms", type=str, nargs="+", help="data augmentation methods"
+    )
+    parser.add_argument(
+        "--config-file", type=str, default="", help="path to config file"
+    )
+    parser.add_argument(
+        "--dataset-config-file",
+        type=str,
+        default="",
+        help="path to config file for dataset setup",
+    )
+    parser.add_argument(
+        "--trainer", type=str, default="", help="name of trainer"
+    )
+    parser.add_argument(
+        "--backbone", type=str, default="", help="name of CNN backbone"
+    )
+    parser.add_argument("--head", type=st
