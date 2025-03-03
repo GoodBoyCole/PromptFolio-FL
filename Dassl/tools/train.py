@@ -163,4 +163,29 @@ if __name__ == "__main__":
     parser.add_argument(
         "--backbone", type=str, default="", help="name of CNN backbone"
     )
-    parser.add_argument("--head", type=st
+    parser.add_argument("--head", type=str, default="", help="name of head")
+    parser.add_argument(
+        "--eval-only", action="store_true", help="evaluation only"
+    )
+    parser.add_argument(
+        "--model-dir",
+        type=str,
+        default="",
+        help="load model from this directory for eval-only mode",
+    )
+    parser.add_argument(
+        "--load-epoch",
+        type=int,
+        help="load model weights at this epoch for evaluation"
+    )
+    parser.add_argument(
+        "--no-train", action="store_true", help="do not call trainer.train()"
+    )
+    parser.add_argument(
+        "opts",
+        default=None,
+        nargs=argparse.REMAINDER,
+        help="modify config options using the command-line",
+    )
+    args = parser.parse_args()
+    main(args)
