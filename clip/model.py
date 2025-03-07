@@ -157,4 +157,23 @@ class ModifiedResNet(nn.Module):
         self.conv1 = nn.Conv2d(3, width // 2, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(width // 2)
         self.conv2 = nn.Conv2d(width // 2, width // 2, kernel_size=3, padding=1, bias=False)
-        self.bn2 = nn.
+        self.bn2 = nn.BatchNorm2d(width // 2)
+        self.conv3 = nn.Conv2d(width // 2, width, kernel_size=3, padding=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(width)
+        self.avgpool = nn.AvgPool2d(2)
+        self.relu = nn.ReLU(inplace=True)
+
+        # residual layers
+        self._inplanes = width  # this is a *mutable* variable used during construction
+        self.layer1 = self._make_layer(width, layers[0])
+        self.layer2 = self._make_layer(width * 2, layers[1], stride=2)
+        self.layer3 = self._make_layer(width * 4, layers[2], stride=2)
+        self.layer4 = self._make_layer(width * 8, layers[3], stride=2)
+
+        embed_dim = width * 32  # the ResNet feature dimension
+        self.attnpool = AttentionPool2d(input_resolution // 32, embed_dim, heads, output_dim)
+
+    def _make_layer(self, planes, blocks, stride=1):
+        layers = [Bottleneck(self._inplanes, planes, stride)]
+
+        self._inplanes = planes * Bottl
