@@ -137,4 +137,24 @@ class AttentionPool2d(nn.Module):
 
 #         x = x.permute(1, 2, 0)
 #         global_feat = x[:, :, 0]
-#         feature_map = x[:, :, 1:].res
+#         feature_map = x[:, :, 1:].reshape(B, -1, H, W)
+#         return global_feat, feature_map
+
+class ModifiedResNet(nn.Module):
+    """
+    A ResNet class that is similar to torchvision's but contains the following changes:
+    - There are now 3 "stem" convolutions as opposed to 1, with an average pool instead of a max pool.
+    - Performs anti-aliasing strided convolutions, where an avgpool is prepended to convolutions with stride > 1
+    - The final pooling layer is a QKV attention instead of an average pool
+    """
+
+    def __init__(self, layers, output_dim, heads, input_resolution=224, width=64):
+        super().__init__()
+        self.output_dim = output_dim
+        self.input_resolution = input_resolution
+
+        # the 3-layer stem
+        self.conv1 = nn.Conv2d(3, width // 2, kernel_size=3, stride=2, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(width // 2)
+        self.conv2 = nn.Conv2d(width // 2, width // 2, kernel_size=3, padding=1, bias=False)
+        self.bn2 = nn.
