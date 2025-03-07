@@ -112,4 +112,29 @@ class AttentionPool2d(nn.Module):
 #         cls_pos = self.positional_embedding[0:1, :]
 #         spatial_pos = F.interpolate(self.positional_embedding[1:,].reshape(1, self.spacial_dim, self.spacial_dim, self.embed_dim).permute(0, 3, 1, 2), size=(H, W), mode='bilinear')
 #         spatial_pos = spatial_pos.reshape(self.embed_dim, H*W).permute(1, 0)
-#         positional_embedding = torch.cat([cls_pos, spatial_p
+#         positional_embedding = torch.cat([cls_pos, spatial_pos], dim=0)
+
+#         x = x + positional_embedding[:, None, :]
+#         x, _ = F.multi_head_attention_forward(
+#             query=x, key=x, value=x,
+#             embed_dim_to_check=x.shape[-1],
+#             num_heads=self.num_heads,
+#             q_proj_weight=self.q_proj.weight,
+#             k_proj_weight=self.k_proj.weight,
+#             v_proj_weight=self.v_proj.weight,
+#             in_proj_weight=None,
+#             in_proj_bias=torch.cat([self.q_proj.bias, self.k_proj.bias, self.v_proj.bias]),
+#             bias_k=None,
+#             bias_v=None,
+#             add_zero_attn=False,
+#             dropout_p=0,
+#             out_proj_weight=self.c_proj.weight,
+#             out_proj_bias=self.c_proj.bias,
+#             use_separate_proj_weight=True,
+#             training=self.training,
+#             need_weights=False
+#         )
+
+#         x = x.permute(1, 2, 0)
+#         global_feat = x[:, :, 0]
+#         feature_map = x[:, :, 1:].res
