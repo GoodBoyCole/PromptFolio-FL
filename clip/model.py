@@ -348,4 +348,26 @@ class VisionTransformer(nn.Module):
         return x
 
 class TPGVisionTransformer(VisionTransformer):
-    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: 
+    def __init__(self, input_resolution: int, patch_size: int, width: int, layers: int, heads: int, output_dim: int, design_details=None):
+        super().__init__(input_resolution, patch_size, width, layers, heads, output_dim, design_details)
+        self.transformer = TPGTransformer(width, layers, heads)
+
+
+class TPGTransformer(nn.Module):
+    def __init__(self, width: int, layers: int, heads: int, attn_mask: torch.Tensor = None):
+        super().__init__()
+        self.width = width
+        self.layers = layers
+        self.resblocks = nn.Sequential(*[ResidualAttentionBlock(width, heads, attn_mask) for _ in range(layers)])
+
+    def forward(self, x,prompts=[], text_prompt= True):
+        # return self.resblocks(x)
+        prompt_depth = len(prompts)
+        if prompt_depth == 0:
+            return self.resblocks(x)
+        for i in range(len(self.resblocks)):
+            if i < prompt_depth:
+                if text_prompt:
+                    prefix = x[:1, :, :]
+                    suffix = x[1 + prompts.shape[1]:, :, :]
+                    ctx = prompts[i].unsqueeze(0).e
