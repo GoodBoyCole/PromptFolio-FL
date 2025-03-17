@@ -370,4 +370,30 @@ class TPGTransformer(nn.Module):
                 if text_prompt:
                     prefix = x[:1, :, :]
                     suffix = x[1 + prompts.shape[1]:, :, :]
-                    ctx = prompts[i].unsqueeze(0).e
+                    ctx = prompts[i].unsqueeze(0).expand(prefix.shape[1], -1, -1).permute(1, 0, 2)
+                    # ctx = prompts[i].permute(1, 0, 2)
+                    x = torch.cat([prefix, ctx, suffix], dim=0)
+                else:
+                    prefix = x[:197, :, :]
+                    ctx = prompts[i].unsqueeze(0).expand(prefix.shape[1], -1, -1).permute(1, 0, 2)
+                    x = torch.cat([prefix, ctx], dim=0)
+            x=self.resblocks[i](x)
+        return x
+
+
+class CLIP(nn.Module):
+    def __init__(self,
+                 embed_dim: int,
+                 # vision
+                 image_resolution: int,
+                 vision_layers: Union[Tuple[int, int, int, int], int],
+                 vision_width: int,
+                 vision_patch_size: int,
+                 # text
+                 context_length: int,
+                 vocab_size: int,
+                 transformer_width: int,
+                 transformer_heads: int,
+                 transformer_layers: int,
+                 design_details
+                
