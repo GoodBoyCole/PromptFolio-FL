@@ -396,4 +396,29 @@ class CLIP(nn.Module):
                  transformer_heads: int,
                  transformer_layers: int,
                  design_details
-                
+                 ):
+        super().__init__()
+
+        self.context_length = context_length
+        trainer = design_details['trainer']
+
+        if isinstance(vision_layers, (tuple, list)):
+            vision_heads = vision_width * 32 // 64
+            if trainer == "CoOp2":
+                self.visual = ModifiedResNet_PLOT(
+                    layers=vision_layers,
+                    output_dim=embed_dim,
+                    heads=vision_heads,
+                    input_resolution=image_resolution,
+                    width=vision_width
+                )
+            elif trainer == "PromptFL":
+                self.visual = ModifiedResNet(
+                    layers=vision_layers,
+                    output_dim=embed_dim,
+                    heads=vision_heads,
+                    input_resolution=image_resolution,
+                    width=vision_width
+                )
+            else:
+                self.vis
