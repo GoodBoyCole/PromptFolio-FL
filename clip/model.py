@@ -421,4 +421,26 @@ class CLIP(nn.Module):
                     width=vision_width
                 )
             else:
-                self.vis
+                self.visual = ModifiedResNet_PLOT(
+                    layers=vision_layers,
+                    output_dim=embed_dim,
+                    heads=vision_heads,
+                    input_resolution=image_resolution,
+                    width=vision_width
+                )
+        else:
+            vision_heads = vision_width // 64
+            if trainer == "FedTPG":
+                # The structure of TPG is different from our code
+                # The class code come from https://github.com/boschresearch/FedTPG/blob/main/clip/model.py
+                self.visual = TPGVisionTransformer(
+                    input_resolution=image_resolution,
+                    patch_size=vision_patch_size,
+                    width=vision_width,
+                    layers=vision_layers,
+                    heads=vision_heads,
+                    output_dim=embed_dim,
+                    design_details=design_details
+                )
+            else:
+                self.visual = VisionTransfo
