@@ -443,4 +443,27 @@ class CLIP(nn.Module):
                     design_details=design_details
                 )
             else:
-                self.visual = VisionTransfo
+                self.visual = VisionTransformer(
+                    input_resolution=image_resolution,
+                    patch_size=vision_patch_size,
+                    width=vision_width,
+                    layers=vision_layers,
+                    heads=vision_heads,
+                    output_dim=embed_dim,
+                    design_details=design_details
+                )
+        if trainer == "FedTPG":
+            # The structure of TPG is different from our code
+            # The class code come from https://github.com/boschresearch/FedTPG/blob/main/clip/model.py
+            self.transformer = TPGTransformer(
+                width=transformer_width,
+                layers=transformer_layers,
+                heads=transformer_heads,
+                attn_mask=self.build_attention_mask()
+            )
+        else:
+            self.transformer = Transformer(
+                width=transformer_width,
+                layers=transformer_layers,
+                heads=transformer_heads,
+                attn_mask=self.build_attention_ma
