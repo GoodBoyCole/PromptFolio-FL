@@ -26,4 +26,4 @@ TRAIN:
 
 MODEL:
   BACKBONE:
-    NAME: "RN50"
+    NAME: "ViT-B/16"
