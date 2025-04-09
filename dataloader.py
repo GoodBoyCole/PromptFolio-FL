@@ -84,4 +84,28 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
             dl_obj = FashionMNIST_truncated
             transform_train = transforms.Compose([
                 transforms.ToTensor(),
-                AddGauss
+                AddGaussianNoise(0., noise_level, net_id, total)])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+        elif dataset == 'svhn':
+            dl_obj = SVHN_custom
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+
+        elif dataset == 'cifar10':
+            dl_obj = CIFAR10_truncated
+
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+            ])
+            # data prep for test set
+            transform_test = transforms.Compose([
+                transforms.ToTens
