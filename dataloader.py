@@ -34,4 +34,29 @@ class AddGaussianNoise(object):
             tmp = torch.randn(tensor.size())
             filt = torch.zeros(tensor.size())
             size = int(28 / self.num)
-   
+            row = int(self.net_id / size)
+            col = self.net_id % size
+            for i in range(size):
+                for j in range(size):
+                    filt[:,row*size+i,col*size+j] = 1
+            tmp = tmp * filt
+            return tensor + tmp * self.std + self.mean
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+
+class GaussianNoise(object):
+    def __init__(self, mean=0., std=1.):
+        self.std = std
+        self.mean = mean
+
+    def __call__(self, tensor):
+
+        return torch.clamp((tensor + torch.randn(tensor.size()) * self.std + self.mean), 0, 255)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_level=0, net_id=None, total=0, apply_noise=False):
+    if dataset in ('mnist', 'femnist', 'fmnist', 'cif
