@@ -59,4 +59,29 @@ class GaussianNoise(object):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
 
 def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_level=0, net_id=None, total=0, apply_noise=False):
-    if dataset in ('mnist', 'femnist', 'fmnist', 'cif
+    if dataset in ('mnist', 'femnist', 'fmnist', 'cifar10','cifar100', 'svhn', 'generated', 'covtype', 'a9a', 'rcv1', 'SUSY'):
+        if dataset == 'mnist':
+            dl_obj = MNIST_truncated
+
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+        elif dataset == 'femnist':
+            dl_obj = FEMNIST
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+        elif dataset == 'fmnist':
+            dl_obj = FashionMNIST_truncated
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGauss
