@@ -108,4 +108,30 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
             ])
             # data prep for test set
             transform_test = transforms.Compose([
-                transforms.ToTens
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+                # AddGaussianNoise(0., noise_level, net_id, total)
+                ])
+
+        elif dataset == 'cifar100':
+            dl_obj = CIFAR100_truncated
+
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
+            ])
+            # data prep for test set
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))
+                # AddGaussianNoise(0., noise_level, net_id, total)
+                ])
+
+
+        else:
+            dl_obj = Generated
+            transform_train = None
+            transform_test = None
+
+
+        train_ds = dl_obj(datadir, dataidxs=dataidxs, train=True, transfo
