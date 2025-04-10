@@ -134,4 +134,25 @@ def get_dataloader(dataset, datadir, train_bs, test_bs, dataidxs=None, noise_lev
             transform_test = None
 
 
-        train_ds = dl_obj(datadir, dataidxs=dataidxs, train=True, transfo
+        train_ds = dl_obj(datadir, dataidxs=dataidxs, train=True, transform=transform_train, download=False)
+        test_ds = dl_obj(datadir, train=False, transform=transform_test, download=False)
+
+        train_dl = data.DataLoader(dataset=train_ds, batch_size=train_bs, shuffle=True, drop_last=False)
+        test_dl = data.DataLoader(dataset=test_ds, batch_size=test_bs, shuffle=False, drop_last=False)
+
+    return train_dl, test_dl, train_ds, test_ds
+
+
+def get_divided_dataloader(dataset, datadir, train_bs, test_bs, dataidxs_train, dataidxs_test, noise_level=0,
+                           net_id=None, total=0, drop_last=False, apply_noise=False):
+    if dataset in (
+    'mnist', 'femnist', 'fmnist', 'cifar10', 'cifar100', 'svhn', 'generated', 'covtype', 'a9a', 'rcv1', 'SUSY'):
+        if dataset == 'mnist':
+            dl_obj = MNIST_truncated
+
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+            transform_test = transforms.Compose([
+ 
