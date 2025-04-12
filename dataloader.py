@@ -155,4 +155,25 @@ def get_divided_dataloader(dataset, datadir, train_bs, test_bs, dataidxs_train, 
                 AddGaussianNoise(0., noise_level, net_id, total)])
 
             transform_test = transforms.Compose([
- 
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+        elif dataset == 'femnist':
+            dl_obj = FEMNIST
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+        elif dataset == 'fmnist':
+            dl_obj = FashionMNIST_truncated
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+        elif dataset == 'sv
