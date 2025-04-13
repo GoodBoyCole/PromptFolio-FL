@@ -176,4 +176,26 @@ def get_divided_dataloader(dataset, datadir, train_bs, test_bs, dataidxs_train, 
                 transforms.ToTensor(),
                 AddGaussianNoise(0., noise_level, net_id, total)])
 
-        elif dataset == 'sv
+        elif dataset == 'svhn':
+            dl_obj = SVHN_custom
+            transform_train = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+            transform_test = transforms.Compose([
+                transforms.ToTensor(),
+                AddGaussianNoise(0., noise_level, net_id, total)])
+
+
+        elif dataset == 'cifar10':
+            dl_obj = CIFAR10_truncated
+            if apply_noise:
+                transform_train = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                    GaussianNoise(0., noise_level)
+                ])
+                # data prep for test set
+                transform_test = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+                    Gauss
