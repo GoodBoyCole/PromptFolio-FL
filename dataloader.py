@@ -220,4 +220,24 @@ def get_divided_dataloader(dataset, datadir, train_bs, test_bs, dataidxs_train, 
                 # data prep for test set
                 transform_test = transforms.Compose([
                     transforms.ToTensor(),
-                    tr
+                    transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762)),
+                    GaussianNoise(0., noise_level)
+                ])
+            else:
+                transform_train = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))])
+
+                transform_test = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762))])
+
+        else:
+            dl_obj = Generated
+            transform_train = None
+            transform_test = None
+
+        train_ds = dl_obj(datadir, dataidxs=dataidxs_train, train=True, transform=transform_train, download=False)
+        test_ds = dl_obj(datadir, dataidxs=dataidxs_test, train=False, transform=transform_test, download=False)
+
+        train_dl = data.DataLoader(dataset=train_ds, batch_size=tra
