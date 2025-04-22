@@ -240,4 +240,31 @@ def get_divided_dataloader(dataset, datadir, train_bs, test_bs, dataidxs_train, 
         train_ds = dl_obj(datadir, dataidxs=dataidxs_train, train=True, transform=transform_train, download=False)
         test_ds = dl_obj(datadir, dataidxs=dataidxs_test, train=False, transform=transform_test, download=False)
 
-        train_dl = data.DataLoader(dataset=train_ds, batch_size=tra
+        train_dl = data.DataLoader(dataset=train_ds, batch_size=train_bs, shuffle=True, drop_last=drop_last)
+        test_dl = data.DataLoader(dataset=test_ds, batch_size=test_bs, shuffle=False, drop_last=False)
+
+    return train_dl, test_dl, train_ds, test_ds
+
+def load_mnist_data(datadir):
+
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    mnist_train_ds = MNIST_truncated(datadir, train=True, download=True, transform=transform)
+    mnist_test_ds = MNIST_truncated(datadir, train=False, download=True, transform=transform)
+
+    X_train, y_train = mnist_train_ds.data, mnist_train_ds.target
+    X_test, y_test = mnist_test_ds.data, mnist_test_ds.target
+
+    X_train = X_train.data.numpy()
+    y_train = y_train.data.numpy()
+    X_test = X_test.data.numpy()
+    y_test = y_test.data.numpy()
+
+    return (X_train, y_train, X_test, y_test)
+
+def load_fmnist_data(datadir):
+
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    mnist_train_ds = FashionMNIST_truncated(datadir, train=True, download=True, transform=transform)
+ 
