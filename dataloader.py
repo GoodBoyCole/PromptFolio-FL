@@ -198,4 +198,26 @@ def get_divided_dataloader(dataset, datadir, train_bs, test_bs, dataidxs_train, 
                 transform_test = transforms.Compose([
                     transforms.ToTensor(),
                     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-                    Gauss
+                    GaussianNoise(0., noise_level)
+                ])
+            else:
+                transform_train = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
+
+                transform_test = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
+
+        elif dataset == 'cifar100':
+            dl_obj = CIFAR100_truncated
+            if apply_noise:
+                transform_train = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.Normalize((0.5071, 0.4865, 0.4409), (0.2673, 0.2564, 0.2762)),
+                    GaussianNoise(0., noise_level)
+                ])
+                # data prep for test set
+                transform_test = transforms.Compose([
+                    transforms.ToTensor(),
+                    tr
