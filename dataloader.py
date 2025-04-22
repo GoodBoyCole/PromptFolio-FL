@@ -267,4 +267,32 @@ def load_fmnist_data(datadir):
     transform = transforms.Compose([transforms.ToTensor()])
 
     mnist_train_ds = FashionMNIST_truncated(datadir, train=True, download=True, transform=transform)
- 
+    mnist_test_ds = FashionMNIST_truncated(datadir, train=False, download=True, transform=transform)
+
+    X_train, y_train = mnist_train_ds.data, mnist_train_ds.target
+    X_test, y_test = mnist_test_ds.data, mnist_test_ds.target
+
+    X_train = X_train.data.numpy()
+    y_train = y_train.data.numpy()
+    X_test = X_test.data.numpy()
+    y_test = y_test.data.numpy()
+
+    return (X_train, y_train, X_test, y_test)
+
+
+def load_svhn_data(datadir):
+
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    svhn_train_ds = SVHN_custom(datadir, train=True, download=True, transform=transform)
+    svhn_test_ds = SVHN_custom(datadir, train=False, download=True, transform=transform)
+
+    X_train, y_train = svhn_train_ds.data, svhn_train_ds.target
+    X_test, y_test = svhn_test_ds.data, svhn_test_ds.target
+
+    return (X_train, y_train, X_test, y_test)
+
+
+def load_cifar10_data(datadir):
+
+    transform = transforms.Compose([transforms.ToTensor(
