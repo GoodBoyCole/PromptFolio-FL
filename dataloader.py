@@ -295,4 +295,27 @@ def load_svhn_data(datadir):
 
 def load_cifar10_data(datadir):
 
-    transform = transforms.Compose([transforms.ToTensor(
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    cifar10_train_ds = CIFAR10_truncated(datadir, train=True, download=True, transform=transform)
+    cifar10_test_ds = CIFAR10_truncated(datadir, train=False, download=True, transform=transform)
+
+    X_train, y_train = cifar10_train_ds.data, cifar10_train_ds.target
+    X_test, y_test = cifar10_test_ds.data, cifar10_test_ds.target
+
+    train_data = cifar10_train_ds.data_detailed
+    test_data = cifar10_test_ds.data_detailed
+
+    lab2cname = cifar10_train_ds.lab2cname
+    classnames = cifar10_train_ds.classnames
+
+    return (X_train, y_train, X_test, y_test, train_data, test_data, lab2cname, classnames)
+
+
+def load_cifar100_data(datadir):
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    cifar100_train_ds = CIFAR100_truncated(datadir, train=True, download=True, transform=transform)
+    cifar100_test_ds = CIFAR100_truncated(datadir, train=False, download=True, transform=transform)
+
+    X_train, y_
