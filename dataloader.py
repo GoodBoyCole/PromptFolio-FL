@@ -318,4 +318,26 @@ def load_cifar100_data(datadir):
     cifar100_train_ds = CIFAR100_truncated(datadir, train=True, download=True, transform=transform)
     cifar100_test_ds = CIFAR100_truncated(datadir, train=False, download=True, transform=transform)
 
-    X_train, y_
+    X_train, y_train = cifar100_train_ds.data, cifar100_train_ds.target
+    X_test, y_test = cifar100_test_ds.data, cifar100_test_ds.target
+
+    train_data = cifar100_train_ds.data_detailed
+    test_data = cifar100_test_ds.data_detailed
+
+    lab2cname = cifar100_train_ds.lab2cname
+    classnames = cifar100_train_ds.classnames
+
+    # return (X_train, y_train, X_test, y_test)
+    return (X_train, y_train, X_test, y_test, train_data, test_data, lab2cname, classnames)
+
+
+def load_celeba_data(datadir):
+
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    celeba_train_ds = CelebA_custom(datadir, split='train', target_type="attr", download=True, transform=transform)
+    celeba_test_ds = CelebA_custom(datadir, split='test', target_type="attr", download=True, transform=transform)
+
+    gender_index = celeba_train_ds.attr_names.index('Male')
+    y_train =  celeba_train_ds.attr[:,gender_index:gender_index+1].reshape(-1)
+  
