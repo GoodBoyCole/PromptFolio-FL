@@ -340,4 +340,25 @@ def load_celeba_data(datadir):
 
     gender_index = celeba_train_ds.attr_names.index('Male')
     y_train =  celeba_train_ds.attr[:,gender_index:gender_index+1].reshape(-1)
-  
+    y_test = celeba_test_ds.attr[:,gender_index:gender_index+1].reshape(-1)
+
+    return (None, y_train, None, y_test)
+
+
+def load_femnist_data(datadir):
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    mnist_train_ds = FEMNIST(datadir, train=True, transform=transform, download=True)
+    mnist_test_ds = FEMNIST(datadir, train=False, transform=transform, download=True)
+
+    X_train, y_train, u_train = mnist_train_ds.data, mnist_train_ds.targets, mnist_train_ds.users_index
+    X_test, y_test, u_test = mnist_test_ds.data, mnist_test_ds.targets, mnist_test_ds.users_index
+
+    X_train = X_train.data.numpy()
+    y_train = y_train.data.numpy()
+    u_train = np.array(u_train)
+    X_test = X_test.data.numpy()
+    y_test = y_test.data.numpy()
+    u_test = np.array(u_test)
+
+    return (X_train, y_train, u_train, X_test, y_test, u_test)
