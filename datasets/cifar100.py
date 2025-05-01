@@ -20,4 +20,15 @@ class Cifar100():
         for net_id in range(cfg.DATASET.USERS):
             dataidxs_train = net_dataidx_map_train[net_id]
             dataidxs_test = net_dataidx_map_test[net_id]
-     
+            for sample in range(len(dataidxs_train)):
+                federated_train_x[net_id].append(data_train[dataidxs_train[sample]])
+            for sample in range(len(dataidxs_test)):
+                federated_test_x[net_id].append(data_test[dataidxs_test[sample]])
+
+        self.federated_train_x = federated_train_x
+        self.federated_test_x = federated_test_x
+        self.lab2cname = lab2cname
+        self.classnames = classnames
+
+
+
