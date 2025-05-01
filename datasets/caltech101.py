@@ -30,4 +30,21 @@ class Caltech101(DatasetBase):
         self.baseline_dir = os.path.join(self.dataset_dir, "baseline")
         mkdir_if_missing(self.split_fewshot_dir)
 
-    
+        if os.path.exists(self.split_path):
+            total_train, val, test = OxfordPets.read_split(self.split_path, self.image_dir)
+        else:
+            total_train, val, test = DTD.read_and_split_data(self.image_dir, ignored=IGNORED, new_cnames=NEW_CNAMES)
+            OxfordPets.save_split(total_train, val, test, self.split_path, self.image_dir)
+
+        num_shots = cfg.DATASET.NUM_SHOTS
+        backbone = cfg.MODEL.HEAD.NAME
+        if num_shots >= 1:
+            seed = cfg.SEED
+            if cfg.TRAINER.NAME == "Baseline":
+                preprocessed = os.path.join(self.baseline_dir, backbone, f"shot_{num_shots}-seed_{seed}.pkl")
+            else:
+                preprocessed = os.path.join(self.split_fewshot_dir, backbone, f"shot_{num_shots}-seed_{seed}.pkl")
+            
+            if os.path.exists(preprocessed):
+                print(f"Loading preprocessed few-shot data from {preprocessed}")
+                with open(preprocessed
