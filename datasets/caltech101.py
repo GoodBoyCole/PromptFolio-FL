@@ -71,4 +71,16 @@ class Caltech101(DatasetBase):
             federated_test_x = self.generate_federated_dataset(test, num_shots=num_shots,
                                                                 num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID,
                                                                 repeat_rate=cfg.DATASET.REPEATRATE)
-            print("federat
+            print("federated all dataset")
+        elif cfg.DATASET.USERS > 0 and not cfg.DATASET.USEALL:
+            federated_train_x = self.generate_federated_fewshot_dataset(total_train, num_shots=num_shots,num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID, repeat_rate=cfg.DATASET.REPEATRATE)
+            federated_test_x = self.generate_federated_dataset(test, num_shots=num_shots,
+                                                                num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID,
+                                                                repeat_rate=cfg.DATASET.REPEATRATE)
+            print("fewshot federated dataset")
+        else:
+            federated_train_x = None
+
+
+        # super().__init__(train_x=train, federated_train_x=federated_train_x, val=val, test=test)
+        super().__init__(train_x=train, federated_train_x=federated_train_x, val=val, federated_test_x=federated_test_x, test=test)
