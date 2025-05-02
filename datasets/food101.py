@@ -28,4 +28,22 @@ class Food101(DatasetBase):
             total_train, val, test = DTD.read_and_split_data(self.image_dir)
             OxfordPets.save_split(total_train, val, test, self.split_path, self.image_dir)
 
-        num_shots = cfg.DATASET.NUM_
+        num_shots = cfg.DATASET.NUM_SHOTS
+        backbone = cfg.MODEL.HEAD.NAME
+        if num_shots >= 1:
+            seed = cfg.SEED
+            if cfg.TRAINER.NAME == "Baseline":
+                preprocessed = os.path.join(self.baseline_dir, backbone, f"shot_{num_shots}-seed_{seed}.pkl")
+            else:
+                preprocessed = os.path.join(self.split_fewshot_dir, f"shot_{num_shots}-seed_{seed}.pkl")
+            
+            if os.path.exists(preprocessed):
+                print(f"Loading preprocessed few-shot data from {preprocessed}")
+                with open(preprocessed, "rb") as file:
+                    data = pickle.load(file)
+                    train, val = data["train"], data["val"]
+            else:
+                train = self.generate_fewshot_dataset(total_train, num_shots=num_shots)
+                val = self.generate_fewshot_dataset(val, num_shots=min(num_shots, 4))
+                data = {"train": train, "val": val}
+                print(f"Saving preprocessed few-shot data to {prepr
