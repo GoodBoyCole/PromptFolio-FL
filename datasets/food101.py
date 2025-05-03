@@ -46,4 +46,17 @@ class Food101(DatasetBase):
                 train = self.generate_fewshot_dataset(total_train, num_shots=num_shots)
                 val = self.generate_fewshot_dataset(val, num_shots=min(num_shots, 4))
                 data = {"train": train, "val": val}
-                print(f"Saving preprocessed few-shot data to {prepr
+                print(f"Saving preprocessed few-shot data to {preprocessed}")
+                # with open(preprocessed, "wb") as file:
+                #     pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
+
+        subsample = cfg.DATASET.SUBSAMPLE_CLASSES
+        train, val, test = OxfordPets.subsample_classes(train, val, test, subsample=subsample)
+        if not cfg.DATASET.IID and cfg.DATASET.BETA != -1:
+            output_dset = self.generate_dirichlet_federated_dataset(total_train, test, num_shots=num_shots,
+                                                                    num_users=cfg.DATASET.USERS, beta=cfg.DATASET.BETA, is_iid=cfg.DATASET.IID,
+                                                                    repeat_rate=cfg.DATASET.REPEATRATE)
+            federated_train_x, federated_test_x = output_dset[0], output_dset[1]
+        elif cfg.DATASET.USERS > 0 and cfg.DATASET.USEALL:
+            federated_train_x = self.generate_federated_dataset(total_train, num_shots=num_shots,
+                                        
