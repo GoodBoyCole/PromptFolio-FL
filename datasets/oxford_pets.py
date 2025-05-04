@@ -93,4 +93,30 @@ class OxfordPets(DatasetBase):
         with open(filepath, "r") as f:
             lines = f.readlines()
             for line in lines:
-                line =
+                line = line.strip()
+                imname, label, species, _ = line.split(" ")
+                breed = imname.split("_")[:-1]
+                breed = "_".join(breed)
+                breed = breed.lower()
+                imname += ".jpg"
+                impath = os.path.join(self.image_dir, imname)
+                label = int(label) - 1  # convert to 0-based index
+                item = Datum(impath=impath, label=label, classname=breed)
+                items.append(item)
+
+        return items
+
+    @staticmethod
+    def split_trainval(trainval, p_val=0.2):
+        p_trn = 1 - p_val
+        print(f"Splitting trainval into {p_trn:.0%} train and {p_val:.0%} val")
+        tracker = defaultdict(list)
+        for idx, item in enumerate(trainval):
+            label = item.label
+            tracker[label].append(idx)
+
+        train, val = [], []
+        for label, idxs in tracker.items():
+            n_val = round(len(idxs) * p_val)
+            assert n_val > 0
+    
