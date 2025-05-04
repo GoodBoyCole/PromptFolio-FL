@@ -29,4 +29,23 @@ class OxfordPets(DatasetBase):
         else:
             trainval = self.read_data(split_file="trainval.txt")
             test = self.read_data(split_file="test.txt")
-            total_train, val = self.split_tr
+            total_train, val = self.split_trainval(trainval)
+            self.save_split(total_train, val, test, self.split_path, self.image_dir)
+
+        num_shots = cfg.DATASET.NUM_SHOTS
+        backbone = cfg.MODEL.HEAD.NAME
+        if num_shots >= 1:
+            seed = cfg.SEED
+            if cfg.TRAINER.NAME == "Baseline":
+                preprocessed = os.path.join(self.baseline_dir, backbone, f"shot_{num_shots}-seed_{seed}.pkl")
+            else:
+                preprocessed = os.path.join(self.split_fewshot_dir, f"shot_{num_shots}-seed_{seed}.pkl")
+            
+            if os.path.exists(preprocessed):
+                print(f"Loading preprocessed few-shot data from {preprocessed}")
+                with open(preprocessed, "rb") as file:
+                    data = pickle.load(file)
+                    train, val = data["train"], data["val"]
+            else:
+                train = self.generate_fewshot_dataset(total_train, num_shots=num_shots)
+  
