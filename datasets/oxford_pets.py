@@ -48,4 +48,21 @@ class OxfordPets(DatasetBase):
                     train, val = data["train"], data["val"]
             else:
                 train = self.generate_fewshot_dataset(total_train, num_shots=num_shots)
-  
+                val = self.generate_fewshot_dataset(val, num_shots=min(num_shots, 4))
+                data = {"train": train, "val": val}
+                print(f"Saving preprocessed few-shot data to {preprocessed}")
+                # with open(preprocessed, "wb") as file:
+                #     pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
+
+        subsample = cfg.DATASET.SUBSAMPLE_CLASSES
+        train, val, test = self.subsample_classes(train, val, test, subsample=subsample)
+
+        if cfg.DATASET.USERS == 20:
+            repeat_rate = 0.1
+        # elif cfg.DATASET.USERS == 50:
+        #     repeat_rate = 1.71
+        else:
+            repeat_rate = cfg.DATASET.REPEATRATE
+        if not cfg.DATASET.IID and cfg.DATASET.BETA != -1:
+            output_dset = self.generate_dirichlet_federated_dataset(total_train, test, num_shots=num_shots,
+                                                                   
