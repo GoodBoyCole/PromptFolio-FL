@@ -152,4 +152,32 @@ class OxfordPets(DatasetBase):
         write_json(split, filepath)
         print(f"Saved split to {filepath}")
 
-  
+    @staticmethod
+    def read_split(filepath, path_prefix):
+        def _convert(items):
+            out = []
+            for impath, label, classname in items:
+                impath = os.path.join(path_prefix, impath)
+                item = Datum(impath=impath, label=int(label), classname=classname)
+                out.append(item)
+            return out
+
+        print(f"Reading split from {filepath}")
+        split = read_json(filepath)
+        train = _convert(split["train"])
+        val = _convert(split["val"])
+        test = _convert(split["test"])
+
+        return train, val, test
+    
+    @staticmethod
+    def subsample_classes(*args, subsample="all"):
+        """Divide classes into two groups. The first group
+        represents base classes while the second group represents
+        new classes.
+
+        Args:
+            args: a list of datasets, e.g. train, val and test.
+            subsample (str): what classes to subsample.
+        """
+        assert subsample
