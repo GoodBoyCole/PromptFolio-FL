@@ -75,4 +75,22 @@ class OxfordPets(DatasetBase):
                                                                 num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID,
                                                                 repeat_rate=repeat_rate)
             print("federated all dataset")
-        elif cfg.DATASET.USERS > 0 and no
+        elif cfg.DATASET.USERS > 0 and not cfg.DATASET.USEALL:
+            federated_train_x = self.generate_federated_fewshot_dataset(total_train, num_shots=num_shots,num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID, repeat_rate=repeat_rate)
+            federated_test_x = self.generate_federated_dataset(test, num_shots=num_shots,
+                                                                num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID,
+                                                                repeat_rate=repeat_rate)
+            print("fewshot federated dataset")
+        else:
+            federated_train_x = None
+
+        super().__init__(train_x=train, federated_train_x=federated_train_x, val=val, federated_test_x=federated_test_x, test=test)
+
+    def read_data(self, split_file):
+        filepath = os.path.join(self.anno_dir, split_file)
+        items = []
+
+        with open(filepath, "r") as f:
+            lines = f.readlines()
+            for line in lines:
+                line =
