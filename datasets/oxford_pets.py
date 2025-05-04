@@ -119,4 +119,37 @@ class OxfordPets(DatasetBase):
         for label, idxs in tracker.items():
             n_val = round(len(idxs) * p_val)
             assert n_val > 0
-    
+            random.shuffle(idxs)
+            for n, idx in enumerate(idxs):
+                item = trainval[idx]
+                if n < n_val:
+                    val.append(item)
+                else:
+                    train.append(item)
+
+        return train, val
+
+    @staticmethod
+    def save_split(train, val, test, filepath, path_prefix):
+        def _extract(items):
+            out = []
+            for item in items:
+                impath = item.impath
+                label = item.label
+                classname = item.classname
+                impath = impath.replace(path_prefix, "")
+                if impath.startswith("/"):
+                    impath = impath[1:]
+                out.append((impath, label, classname))
+            return out
+
+        train = _extract(train)
+        val = _extract(val)
+        test = _extract(test)
+
+        split = {"train": train, "val": val, "test": test}
+
+        write_json(split, filepath)
+        print(f"Saved split to {filepath}")
+
+  
