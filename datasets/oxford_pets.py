@@ -65,4 +65,14 @@ class OxfordPets(DatasetBase):
             repeat_rate = cfg.DATASET.REPEATRATE
         if not cfg.DATASET.IID and cfg.DATASET.BETA != -1:
             output_dset = self.generate_dirichlet_federated_dataset(total_train, test, num_shots=num_shots,
-                                                                   
+                                                                    num_users=cfg.DATASET.USERS, beta=cfg.DATASET.BETA, is_iid=cfg.DATASET.IID,
+                                                                    repeat_rate=cfg.DATASET.REPEATRATE)
+            federated_train_x, federated_test_x = output_dset[0], output_dset[1]
+        elif cfg.DATASET.USERS > 0 and cfg.DATASET.USEALL:
+            federated_train_x = self.generate_federated_dataset(total_train, num_shots=num_shots,
+                                                                        num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID, repeat_rate=repeat_rate)
+            federated_test_x = self.generate_federated_dataset(test, num_shots=num_shots,
+                                                                num_users=cfg.DATASET.USERS, is_iid=cfg.DATASET.IID,
+                                                                repeat_rate=repeat_rate)
+            print("federated all dataset")
+        elif cfg.DATASET.USERS > 0 and no
