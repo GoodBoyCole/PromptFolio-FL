@@ -180,4 +180,30 @@ class OxfordPets(DatasetBase):
             args: a list of datasets, e.g. train, val and test.
             subsample (str): what classes to subsample.
         """
-        assert subsample
+        assert subsample in ["all", "base", "new"]
+
+        if subsample == "all":
+            return args
+        
+        dataset = args[0]
+        labels = set()
+        for item in dataset:
+            labels.add(item.label)
+        labels = list(labels)
+        labels.sort()
+        n = len(labels)
+        # Divide classes into two halves
+        m = math.ceil(n / 2)
+
+        print(f"SUBSAMPLE {subsample.upper()} CLASSES!")
+        if subsample == "base":
+            selected_train_val = labels[:m]  # take the first half for base
+            selected_test = labels[:m]  # take the first half for test as well
+        else:  # subsample == "new"
+            selected_train_val = labels[:m]  # take the first half for train and val
+            selected_test = labels[m:]  # take the second half for test
+
+        # Function to relabel classes
+        def relabel(dataset, selected):
+            relabeler = {y: y_new for y_new, y in enumerate(selected)}
+     
