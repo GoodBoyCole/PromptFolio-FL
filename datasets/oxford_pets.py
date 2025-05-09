@@ -206,4 +206,21 @@ class OxfordPets(DatasetBase):
         # Function to relabel classes
         def relabel(dataset, selected):
             relabeler = {y: y_new for y_new, y in enumerate(selected)}
-     
+            dataset_new = []
+            for item in dataset:
+                if item.label not in selected:
+                    continue
+                item_new = Datum(
+                    impath=item.impath,
+                    label=relabeler[item.label],
+                    classname=item.classname
+                )
+                dataset_new.append(item_new)
+            return dataset_new
+
+        # Apply the relabel function to each dataset
+        train_new = relabel(args[0], selected_train_val)
+        val_new = relabel(args[1], selected_train_val)
+        test_new = relabel(args[2], selected_test)
+        
+        return train_new, val_new, test_new
