@@ -37,4 +37,24 @@ def renormalize(weights, index):
     return renormalized_weights
 
 def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None):
-    # np.
+    # np.random.seed(2020)
+    # torch.manual_seed(2020)
+
+    if dataset == 'mnist':
+        X_train, y_train, X_test, y_test = load_mnist_data(datadir)
+    elif dataset == 'fmnist':
+        X_train, y_train, X_test, y_test = load_fmnist_data(datadir)
+    elif dataset == 'cifar10':
+        X_train, y_train, X_test, y_test, data_train, data_test, lab2cname, classnames = load_cifar10_data(datadir)
+        y = np.concatenate([y_train, y_test], axis=0)
+    elif dataset == 'cifar100':
+        # X_train, y_train, X_test, y_test = load_cifar100_data(datadir)
+        X_train, y_train, X_test, y_test, data_train, data_test, lab2cname, classnames = load_cifar100_data(datadir)
+        y = np.concatenate([y_train, y_test], axis=0)
+
+    elif dataset == 'svhn':
+        X_train, y_train, X_test, y_test = load_svhn_data(datadir)
+    elif dataset == 'celeba':
+        X_train, y_train, X_test, y_test = load_celeba_data(datadir)
+    elif dataset == 'femnist':
+        X_train, y_train, u_train, X_test, y_test, u_te
