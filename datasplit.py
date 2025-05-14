@@ -57,4 +57,32 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
     elif dataset == 'celeba':
         X_train, y_train, X_test, y_test = load_celeba_data(datadir)
     elif dataset == 'femnist':
-        X_train, y_train, u_train, X_test, y_test, u_te
+        X_train, y_train, u_train, X_test, y_test, u_test = load_femnist_data(datadir)
+    elif dataset == 'generated':
+        X_train, y_train = [], []
+        for loc in range(4):
+            for i in range(1000):
+                p1 = random.random()
+                p2 = random.random()
+                p3 = random.random()
+                if loc > 1:
+                    p2 = -p2
+                if loc % 2 ==1:
+                    p3 = -p3
+                if i % 2 == 0:
+                    X_train.append([p1, p2, p3])
+                    y_train.append(0)
+                else:
+                    X_train.append([-p1, -p2, -p3])
+                    y_train.append(1)
+        X_test, y_test = [], []
+        for i in range(1000):
+            p1 = random.random() * 2 - 1
+            p2 = random.random() * 2 - 1
+            p3 = random.random() * 2 - 1
+            X_test.append([p1, p2, p3])
+            if p1 >0:
+                y_test.append(0)
+            else:
+                y_test.append(1)
+        X_tra
