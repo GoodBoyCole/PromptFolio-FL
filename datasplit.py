@@ -215,4 +215,22 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
             # sampling alpha_i_c
             probs = np.random.uniform(0.4, 0.6, size=count_per_class)
             # normalizing
- 
+            probs_norm = (probs / probs.sum()).tolist()
+            class_dict[i] = {'count': count_per_class, 'prob': probs_norm}
+
+        # -------------------------------------#
+        # Assign each client with data indexes #
+        # -------------------------------------#
+        class_partitions = defaultdict(list)
+        for i in range(n_parties):
+            c = []
+            for _ in range(num):
+                class_counts = [class_dict[i]['count'] for i in range(K)]
+                max_class_counts = np.where(np.array(class_counts) == max(class_counts))[0]
+                c.append(np.random.choice(max_class_counts))
+                class_dict[c[-1]]['count'] -= 1
+            class_partitions['class'].append(c)
+            class_partitions['prob'].append([class_dict[i]['prob'].pop() for i in c])
+
+        # -------------------------- #
+        # Create class index mapping
