@@ -187,4 +187,32 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
                 sample_idx = rng.sample(list(indices_by_fine_labels_test[fine_label]), n_samples_by_client_test)
                 net_dataidx_map_test[client_idx] = np.append(net_dataidx_map_test[client_idx], sample_idx)
                 for idx in sample_idx:
-                    indices_by_fine_labels_test[fine_label].remov
+                    indices_by_fine_labels_test[fine_label].remove(idx)
+
+    elif partition == "noniid-labeluni":
+        if dataset == "cifar10":
+            num = 2
+        elif dataset == "cifar100":
+            num = 10
+        if dataset in ('celeba', 'covtype', 'a9a', 'rcv1', 'SUSY'):
+            num = 1
+            K = 2
+        elif dataset == 'cifar100':
+            K = 100
+        elif dataset == 'cifar10':
+            K = 10
+        else:
+            assert False
+            print("Choose Dataset in readme.")
+
+        # -------------------------------------------#
+        # Divide classes + num samples for each user #
+        # -------------------------------------------#
+        assert (num * n_parties) % K == 0, "equal classes appearance is needed"
+        count_per_class = (num * n_parties) // K
+        class_dict = {}
+        for i in range(K):
+            # sampling alpha_i_c
+            probs = np.random.uniform(0.4, 0.6, size=count_per_class)
+            # normalizing
+ 
