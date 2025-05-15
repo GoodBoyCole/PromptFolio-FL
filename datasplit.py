@@ -129,4 +129,24 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
                 18, 1, 2, 15, 6, 0, 17, 8, 14, 13
             ])
         rng_seed = (seed if (seed is not None and seed >= 0) else int(time.time()))
-        rng = ra
+        rng = random.Random(rng_seed)
+        np.random.seed(rng_seed)
+
+        n_samples_train = y_train.shape[0]
+        n_samples_test = y_test.shape[0]
+
+        selected_indices_train = rng.sample(list(range(n_samples_train)), n_samples_train)
+        selected_indices_test = rng.sample(list(range(n_samples_test)), n_samples_test)
+
+        n_samples_by_client_train = int((n_samples_train / n_parties) // 5)
+        n_samples_by_client_test = int((n_samples_test / n_parties) // 5)
+
+        indices_by_fine_labels_train = {k: list() for k in range(n_fine_labels)}
+        indices_by_coarse_labels_train = {k: list() for k in range(n_coarse_labels)}
+
+        indices_by_fine_labels_test = {k: list() for k in range(n_fine_labels)}
+        indices_by_coarse_labels_test = {k: list() for k in range(n_coarse_labels)}
+
+        for idx in selected_indices_train:
+            fine_label = y_train[idx]
+            coarse_label = coarse_labels
