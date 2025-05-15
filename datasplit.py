@@ -85,4 +85,27 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
                 y_test.append(0)
             else:
                 y_test.append(1)
-        X_tra
+        X_train = np.array(X_train, dtype=np.float32)
+        X_test = np.array(X_test, dtype=np.float32)
+        y_train = np.array(y_train, dtype=np.int32)
+        y_test = np.array(y_test, dtype=np.int64)
+        idxs = np.linspace(0 ,3999 ,4000 ,dtype=np.int64)
+        batch_idxs = np.array_split(idxs, n_parties)
+        net_dataidx_map = {i: batch_idxs[i] for i in range(n_parties)}
+        mkdirs("data/generated/")
+        np.save("data/generated/X_train.npy" ,X_train)
+        np.save("data/generated/X_test.npy" ,X_test)
+        np.save("data/generated/y_train.npy" ,y_train)
+        np.save("data/generated/y_test.npy" ,y_test)
+
+    n_train = y_train.shape[0]
+    n_test = y_test.shape[0]
+
+    if partition == "homo":
+        idxs_train = np.random.permutation(n_train)
+        idxs_test = np.random.permutation(n_test)
+
+        batch_idxs_train = np.array_split(idxs_train, n_parties)
+        batch_idxs_test = np.array_split(idxs_test, n_parties)
+
+        net_dataidx_map_train = {i: batch_idxs_train
