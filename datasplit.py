@@ -108,4 +108,25 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         batch_idxs_train = np.array_split(idxs_train, n_parties)
         batch_idxs_test = np.array_split(idxs_test, n_parties)
 
-        net_dataidx_map_train = {i: batch_idxs_train
+        net_dataidx_map_train = {i: batch_idxs_train[i] for i in range(n_parties)}
+        net_dataidx_map_test = {i: batch_idxs_test[i] for i in range(n_parties)}
+
+    elif partition == "iid-label100":
+        seed = 12345
+        n_fine_labels = 100
+        n_coarse_labels = 20
+        coarse_labels = \
+            np.array([
+                4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
+                3, 14, 9, 18, 7, 11, 3, 9, 7, 11,
+                6, 11, 5, 10, 7, 6, 13, 15, 3, 15,
+                0, 11, 1, 10, 12, 14, 16, 9, 11, 5,
+                5, 19, 8, 8, 15, 13, 14, 17, 18, 10,
+                16, 4, 17, 4, 2, 0, 17, 4, 18, 17,
+                10, 3, 2, 12, 12, 16, 12, 1, 9, 19,
+                2, 10, 0, 1, 16, 12, 9, 13, 15, 13,
+                16, 19, 2, 4, 6, 19, 5, 5, 8, 19,
+                18, 1, 2, 15, 6, 0, 17, 8, 14, 13
+            ])
+        rng_seed = (seed if (seed is not None and seed >= 0) else int(time.time()))
+        rng = ra
