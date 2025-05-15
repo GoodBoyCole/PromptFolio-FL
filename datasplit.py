@@ -172,4 +172,19 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         for client_idx in range(n_parties):
             coarse_idx = client_idx // 5
             fine_idx = fine_labels_by_coarse_labels[coarse_idx]
-            
+            for k in range(5):
+                fine_label = fine_idx[k]
+                sample_idx = rng.sample(list(indices_by_fine_labels_train[fine_label]), n_samples_by_client_train)
+                net_dataidx_map_train[client_idx] = np.append(net_dataidx_map_train[client_idx], sample_idx)
+                for idx in sample_idx:
+                    indices_by_fine_labels_train[fine_label].remove(idx)
+
+        for client_idx in range(n_parties):
+            coarse_idx = client_idx // 5
+            fine_idx = fine_labels_by_coarse_labels[coarse_idx]
+            for k in range(5):
+                fine_label = fine_idx[k]
+                sample_idx = rng.sample(list(indices_by_fine_labels_test[fine_label]), n_samples_by_client_test)
+                net_dataidx_map_test[client_idx] = np.append(net_dataidx_map_test[client_idx], sample_idx)
+                for idx in sample_idx:
+                    indices_by_fine_labels_test[fine_label].remov
