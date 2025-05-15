@@ -149,4 +149,27 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
 
         for idx in selected_indices_train:
             fine_label = y_train[idx]
-            coarse_label = coarse_labels
+            coarse_label = coarse_labels[fine_label]
+
+            indices_by_fine_labels_train[fine_label].append(idx)
+            indices_by_coarse_labels_train[coarse_label].append(idx)
+
+        for idx in selected_indices_test:
+            fine_label = y_test[idx]
+            coarse_label = coarse_labels[fine_label]
+
+            indices_by_fine_labels_test[fine_label].append(idx)
+            indices_by_coarse_labels_test[coarse_label].append(idx)
+
+        fine_labels_by_coarse_labels = {k: list() for k in range(n_coarse_labels)}
+
+        for fine_label, coarse_label in enumerate(coarse_labels):
+            fine_labels_by_coarse_labels[coarse_label].append(fine_label)
+
+        net_dataidx_map_train = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+        net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+
+        for client_idx in range(n_parties):
+            coarse_idx = client_idx // 5
+            fine_idx = fine_labels_by_coarse_labels[coarse_idx]
+            
