@@ -256,3 +256,21 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
 
         for usr_i in range(n_parties):
+            for c, p in zip(class_partitions['class'][usr_i], class_partitions['prob'][usr_i]):
+                end_idx_train = int(num_samples_train[c] * p)
+                end_idx_test = int(num_samples_test[c] * p)
+
+                net_dataidx_map_train[usr_i] = np.append(net_dataidx_map_train[usr_i],
+                                                         data_class_idx_train[c][:end_idx_train])
+                net_dataidx_map_test[usr_i] = np.append(net_dataidx_map_test[usr_i],
+                                                        data_class_idx_test[c][:end_idx_test])
+                data_class_idx_train[c] = data_class_idx_train[c][end_idx_train:]
+                data_class_idx_test[c] = data_class_idx_test[c][end_idx_test:]
+
+    elif partition == "noniid-labeldir":
+        min_size = 0
+        min_require_size = 10
+        if dataset == 'cifar10':
+            K = 10
+        elif dataset == "cifar100":
+            K =
