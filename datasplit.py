@@ -233,4 +233,26 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
             class_partitions['prob'].append([class_dict[i]['prob'].pop() for i in c])
 
         # -------------------------- #
-        # Create class index mapping
+        # Create class index mapping #
+        # -------------------------- #
+        data_class_idx_train = {i: np.where(y_train == i)[0] for i in range(K)}
+        data_class_idx_test = {i: np.where(y_test == i)[0] for i in range(K)}
+
+        num_samples_train = {i: len(data_class_idx_train[i]) for i in range(K)}
+        num_samples_test = {i: len(data_class_idx_test[i]) for i in range(K)}
+
+        # --------- #
+        # Shuffling #
+        # --------- #
+        for data_idx in data_class_idx_train.values():
+            random.shuffle(data_idx)
+        for data_idx in data_class_idx_test.values():
+            random.shuffle(data_idx)
+
+        # ------------------------------ #
+        # Assigning samples to each user #
+        # ------------------------------ #
+        net_dataidx_map_train = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+        net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+
+        for usr_i in range(n_parties):
