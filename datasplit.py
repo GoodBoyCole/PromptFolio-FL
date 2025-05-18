@@ -273,4 +273,29 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         if dataset == 'cifar10':
             K = 10
         elif dataset == "cifar100":
-            K =
+            K = 100
+        elif dataset in ('celeba', 'covtype', 'a9a', 'rcv1', 'SUSY'):
+            K = 2
+            # min_require_size = 100
+        else:
+            assert False
+            print("Choose Dataset in readme.")
+
+        N_train = y_train.shape[0]
+        N_test = y_test.shape[0]
+        net_dataidx_map_train = {}
+        net_dataidx_map_test = {}
+
+        while min_size < min_require_size:
+            idx_batch_train = [[] for _ in range(n_parties)]
+            idx_batch_test = [[] for _ in range(n_parties)]
+            for k in range(K):
+                train_idx_k = np.where(y_train == k)[0]
+                test_idx_k = np.where(y_test == k)[0]
+
+                np.random.shuffle(train_idx_k)
+                np.random.shuffle(test_idx_k)
+
+                proportions = np.random.dirichlet(np.repeat(beta, n_parties))
+                proportions = np.array \
+                    ([p * (len(idx_j) < N_train / n_parties) for p, idx_j in zip(proportions,
