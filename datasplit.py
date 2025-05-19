@@ -298,4 +298,18 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
 
                 proportions = np.random.dirichlet(np.repeat(beta, n_parties))
                 proportions = np.array \
-                    ([p * (len(idx_j) < N_train / n_parties) for p, idx_j in zip(proportions,
+                    ([p * (len(idx_j) < N_train / n_parties) for p, idx_j in zip(proportions, idx_batch_train)])
+                proportions = proportions / proportions.sum()
+                proportions_train = (np.cumsum(proportions) * len(train_idx_k)).astype(int)[:-1]
+                proportions_test = (np.cumsum(proportions) * len(test_idx_k)).astype(int)[:-1]
+                idx_batch_train = [idx_j + idx.tolist() for idx_j, idx in zip(idx_batch_train, np.split(train_idx_k, proportions_train))]
+                idx_batch_test = [idx_j + idx.tolist() for idx_j, idx in zip(idx_batch_test, np.split(test_idx_k, proportions_test))]
+
+                min_size_train = min([len(idx_j) for idx_j in idx_batch_train])
+                min_size_test = min([len(idx_j) for idx_j in idx_batch_test])
+                min_size = min(min_size_train, min_size_test)
+
+        for j in range(n_parties):
+            np.random.shuffle(idx_batch_train[j])
+            np.random.shuffle(idx_batch_test[j])
+            net_dataidx_map_train[j] = idx_batch_train[j
