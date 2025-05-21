@@ -338,4 +338,30 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         rng = random.Random(rng_seed)
         np.random.seed(rng_seed)
 
-        n_samples =
+        n_samples = y.shape[0]
+
+        # shuffle the indexes
+        selected_indices = rng.sample(list(range(n_samples)), n_samples)
+        n_samples_by_client = n_samples // n_parties
+
+        # {0: [], ... 99: []}
+        indices_by_fine_labels = {k: list() for k in range(n_fine_labels)}
+
+        # {0: [], ... 19: []}
+        indices_by_coarse_labels = {k: list() for k in range(n_coarse_labels)}
+
+        # {0: [idx], ... 99: []}
+        # {4: [idx], ... 19: []}
+        for idx in selected_indices:
+            fine_label = y[idx]
+            coarse_label = coarse_labels[fine_label]
+
+            indices_by_fine_labels[fine_label].append(idx)
+            indices_by_coarse_labels[coarse_label].append(idx)
+
+        # [0, ..., 19]
+        available_coarse_labels = [ii for ii in range(n_coarse_labels)]
+
+        # {0: [4, 40, 72, ...], 19: [...]}
+        fine_labels_by_coarse_labels = {k: list() for k in range(n_coarse_labels)}
+        for fine_label, coar
