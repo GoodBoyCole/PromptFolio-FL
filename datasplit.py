@@ -312,4 +312,30 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         for j in range(n_parties):
             np.random.shuffle(idx_batch_train[j])
             np.random.shuffle(idx_batch_test[j])
-            net_dataidx_map_train[j] = idx_batch_train[j
+            net_dataidx_map_train[j] = idx_batch_train[j]
+            net_dataidx_map_test[j] = idx_batch_test[j]
+
+    elif partition == "noniid-labeldir100":
+        seed = 12345
+        alpha = 10
+        n_fine_labels = 100
+        n_coarse_labels = 20
+        coarse_labels = \
+            np.array([
+                4, 1, 14, 8, 0, 6, 7, 7, 18, 3,
+                3, 14, 9, 18, 7, 11, 3, 9, 7, 11,
+                6, 11, 5, 10, 7, 6, 13, 15, 3, 15,
+                0, 11, 1, 10, 12, 14, 16, 9, 11, 5,
+                5, 19, 8, 8, 15, 13, 14, 17, 18, 10,
+                16, 4, 17, 4, 2, 0, 17, 4, 18, 17,
+                10, 3, 2, 12, 12, 16, 12, 1, 9, 19,
+                2, 10, 0, 1, 16, 12, 9, 13, 15, 13,
+                16, 19, 2, 4, 6, 19, 5, 5, 8, 19,
+                18, 1, 2, 15, 6, 0, 17, 8, 14, 13
+            ])
+
+        rng_seed = (seed if (seed is not None and seed >= 0) else int(time.time()))
+        rng = random.Random(rng_seed)
+        np.random.seed(rng_seed)
+
+        n_samples =
