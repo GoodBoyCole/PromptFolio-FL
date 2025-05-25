@@ -364,4 +364,23 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
 
         # {0: [4, 40, 72, ...], 19: [...]}
         fine_labels_by_coarse_labels = {k: list() for k in range(n_coarse_labels)}
-        for fine_label, coar
+        for fine_label, coarse_label in enumerate(coarse_labels):
+            fine_labels_by_coarse_labels[coarse_label].append(fine_label)
+
+        # [num_user * []]
+        net_dataidx_map = [[] for i in range(n_parties)]
+
+
+        for client_idx in range(n_parties):
+            # First assign dirichlet to coarse labels
+            coarse_labels_weights = np.random.dirichlet(alpha=beta * np.ones(len(fine_labels_by_coarse_labels)))
+            weights_by_coarse_labels = dict()
+
+            # For each coarse labels, assign dirichlet to finelabels
+            for coarse_label, fine_labels in fine_labels_by_coarse_labels.items():
+                weights_by_coarse_labels[coarse_label] = np.random.dirichlet(alpha=alpha * np.ones(len(fine_labels)))
+
+            # Assign samples for each client
+            for ii in range(n_samples_by_client):
+                # Select samples from multinomial distribution
+                coarse_label_idx = int(np.argmax(np.random.multinomial(1, coarse_labels_we
