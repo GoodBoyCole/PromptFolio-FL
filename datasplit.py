@@ -478,4 +478,5 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
     traindata_cls_counts = record_net_data_stats(y_train, net_dataidx_map_train, logdir)
     testdata_cls_counts = record_net_data_stats(y_test, net_dataidx_map_test, logdir)
 
-    return (data_train, data_test, lab2cname, cla
+    return (data_train, data_test, lab2cname, classnames, net_dataidx_map_train, net_dataidx_map_test, traindata_cls_counts,
+            testdata_cls_counts)
