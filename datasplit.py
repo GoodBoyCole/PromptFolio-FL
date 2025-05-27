@@ -397,4 +397,18 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
                 indices_by_coarse_labels[coarse_label].remove(sample_idx)
                 if len(indices_by_fine_labels[fine_label]) == 0:
                     fine_labels_by_coarse_labels[coarse_label].remove(fine_label)
-                    weights_by_coarse_labels[coarse_label] = renormalize(weights_by_coarse_labels[coar
+                    weights_by_coarse_labels[coarse_label] = renormalize(weights_by_coarse_labels[coarse_label]
+                                                                         ,fine_label_idx)
+                    if len(indices_by_coarse_labels[coarse_label]) == 0:
+                        fine_labels_by_coarse_labels.pop(coarse_label, None)
+                        available_coarse_labels.remove(coarse_label)
+                        coarse_labels_weights = renormalize(coarse_labels_weights, coarse_label_idx)
+
+        random.shuffle(net_dataidx_map)
+
+        # for each user, recover the index of train and test
+        net_dataidx_map_train = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+        net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+        for i, index in enumerate(net_dataidx_map):
+            net_dataidx_map_train[i] = np.append(net_dataidx_map_train[i], index[index < n_train]).astype(int)
+            net_dataidx_map_test[i] = np.append(net_dataidx_map_test[i], index[index >= n
