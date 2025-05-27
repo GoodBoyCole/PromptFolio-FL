@@ -383,4 +383,18 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
             # Assign samples for each client
             for ii in range(n_samples_by_client):
                 # Select samples from multinomial distribution
-                coarse_label_idx = int(np.argmax(np.random.multinomial(1, coarse_labels_we
+                coarse_label_idx = int(np.argmax(np.random.multinomial(1, coarse_labels_weights)))
+                coarse_label = available_coarse_labels[coarse_label_idx]
+                fine_label_idx = int(np.argmax(np.random.multinomial(1, weights_by_coarse_labels[coarse_label])))
+                fine_label = fine_labels_by_coarse_labels[coarse_label][fine_label_idx]
+
+                # Obtain index
+                sample_idx = int(rng.choice(list(indices_by_fine_labels[fine_label])))
+                net_dataidx_map[client_idx] = np.append(net_dataidx_map[client_idx], sample_idx)
+
+                # This mechanism is to handle available of classes
+                indices_by_fine_labels[fine_label].remove(sample_idx)
+                indices_by_coarse_labels[coarse_label].remove(sample_idx)
+                if len(indices_by_fine_labels[fine_label]) == 0:
+                    fine_labels_by_coarse_labels[coarse_label].remove(fine_label)
+                    weights_by_coarse_labels[coarse_label] = renormalize(weights_by_coarse_labels[coar
