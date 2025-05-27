@@ -456,4 +456,26 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
                         times[ind] += 1
                 contain.append(current)
             net_dataidx_map_train = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
-            net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64
+            net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+
+            for i in range(K):
+                idx_k_train = np.where(y_train == i)[0]
+                idx_k_test = np.where(y_test == i)[0]
+
+                np.random.shuffle(idx_k_train)
+                np.random.shuffle(idx_k_test)
+
+                train_split = np.array_split(idx_k_train, times[i])
+                test_split = np.array_split(idx_k_test, times[i])
+
+                ids = 0
+                for j in range(n_parties):
+                    if i in contain[j]:
+                        net_dataidx_map_train[j] = np.append(net_dataidx_map_train[j], train_split[ids])
+                        net_dataidx_map_test[j] = np.append(net_dataidx_map_test[j], test_split[ids])
+                        ids += 1
+
+    traindata_cls_counts = record_net_data_stats(y_train, net_dataidx_map_train, logdir)
+    testdata_cls_counts = record_net_data_stats(y_test, net_dataidx_map_test, logdir)
+
+    return (data_train, data_test, lab2cname, cla
