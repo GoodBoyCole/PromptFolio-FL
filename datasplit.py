@@ -436,4 +436,24 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
                 np.random.shuffle(idx_k_train)
                 np.random.shuffle(idx_k_test)
 
-                train_split = np.arra
+                train_split = np.array_split(idx_k_train, n_parties)
+                test_split = np.array_split(idx_k_test, n_parties)
+                for j in range(n_parties):
+                    net_dataidx_map_train[j] = np.append(net_dataidx_map_train[j], train_split[j])
+                    net_dataidx_map_test[j] = np.append(net_dataidx_map_test[j], test_split[j])
+        else:
+            times = [0 for i in range(10)]
+            contain = []
+            for i in range(n_parties):
+                current = [i % K]
+                times[i % K] += 1
+                j = 1
+                while (j < num):
+                    ind = random.randint(0, K - 1)
+                    if (ind not in current):
+                        j = j + 1
+                        current.append(ind)
+                        times[ind] += 1
+                contain.append(current)
+            net_dataidx_map_train = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+            net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64
