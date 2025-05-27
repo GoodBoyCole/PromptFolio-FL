@@ -411,4 +411,29 @@ def partition_data(dataset, datadir, partition, n_parties, beta=0.4, logdir=None
         net_dataidx_map_test = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
         for i, index in enumerate(net_dataidx_map):
             net_dataidx_map_train[i] = np.append(net_dataidx_map_train[i], index[index < n_train]).astype(int)
-            net_dataidx_map_test[i] = np.append(net_dataidx_map_test[i], index[index >= n
+            net_dataidx_map_test[i] = np.append(net_dataidx_map_test[i], index[index >= n_train] - n_train).astype(int)
+
+    elif partition > "noniid-#label0" and partition <= "noniid-#label9":
+        num = eval(partition[13:])
+        if dataset in ('celeba', 'covtype', 'a9a', 'rcv1', 'SUSY'):
+            num = 1
+            K = 2
+        elif dataset == 'cifar10':
+            K = 10
+        elif dataset == "cifar100":
+            K = 100
+        else:
+            assert False
+            print("Choose Dataset in readme.")
+
+        if num == 10:
+            net_dataidx_map_train ={i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+            net_dataidx_map_train = {i: np.ndarray(0, dtype=np.int64) for i in range(n_parties)}
+            for i in range(10):
+                idx_k_train = np.where(y_train == i)[0]
+                idx_k_test = np.where(y_test == i)[0]
+
+                np.random.shuffle(idx_k_train)
+                np.random.shuffle(idx_k_test)
+
+                train_split = np.arra
