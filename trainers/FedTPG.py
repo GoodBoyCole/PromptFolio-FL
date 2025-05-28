@@ -123,3 +123,43 @@ class CrossAttention(nn.Module):
 class SelfAttention(nn.Module):
     def __init__(
             self,
+            depth,
+            latent_dim,
+            latent_heads=4,
+    ):
+        super().__init__()
+
+        self.layers = nn.ModuleList([])
+
+        for i in range(depth):
+            self.layers.append(nn.ModuleList([
+                PreNorm(latent_dim, nn.MultiheadAttention(latent_dim, num_heads=latent_heads, batch_first=True)),
+                FeedForward(latent_dim)
+            ]))
+
+    def forward(
+            self,
+            x,
+            mask=None
+    ):
+        # layers
+
+        for self_attn, self_ff in self.layers:
+            x = self_attn(x, key_padding_mask=mask)[0] + x
+            x = self_ff(x) + x
+        return x
+
+
+class PromptTranslator(nn.Module):
+    def __init__(
+            self,
+            prompt_len,
+            prompt_depth,
+            prompt_dim = 512,
+            depth=4,
+            self_heads = 4,
+            cross_heads = 4,
+            textemb_dim=512,
+            device='cuda'
+    ):
+    
