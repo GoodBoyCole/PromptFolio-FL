@@ -88,4 +88,38 @@ class FeedForward(nn.Module):
 
 
 class CrossAttention(nn.Module):
-    def __init
+    def __init__(
+            self,
+            latent_dim,
+            kv_dim,
+            cross_heads=4,
+            seq_dropout_prob=0.
+    ):
+        super().__init__()
+        self.seq_dropout_prob = seq_dropout_prob
+
+        self.cross_attend_blocks = nn.ModuleList([
+            PreNorm(latent_dim,
+                    nn.MultiheadAttention(latent_dim, num_heads=cross_heads, kdim=kv_dim, vdim=kv_dim,
+                                          dropout=seq_dropout_prob, batch_first=True),
+                    context_dim=kv_dim),
+            FeedForward(latent_dim)])
+
+    def forward(
+            self,
+            data,
+            soft_prompt,
+            mask=None,
+    ):
+        b, *_, device = *data.shape, data.device
+        x = repeat(soft_prompt, 'n d -> b n d', b=b)
+        cross_attn, cross_ff = self.cross_attend_blocks
+        x, _ = cross_attn(x, data, key_padding_mask=mask)
+        x = cross_ff(x)+x
+
+        return x
+
+
+class SelfAttention(nn.Module):
+    def __init__(
+            self,
