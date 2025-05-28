@@ -50,3 +50,42 @@ class PreNorm(nn.Module):
     def __init__(self, dim, fn, context_dim=None):
         super().__init__()
         self.fn = fn
+        self.norm = nn.LayerNorm(dim)
+        self.norm_context = nn.LayerNorm(context_dim) if exists(context_dim) else None
+
+    def forward(self, x_q, x_kv=None, **kwargs):
+        x_q = self.norm(x_q)
+
+        if exists(x_kv):
+            x_kv = self.norm_context(x_kv)
+        else:
+            x_kv = x_q
+
+        return self.fn(x_q, x_kv, x_kv, **kwargs)
+
+
+class GEGLU(nn.Module):
+    def forward(self, x):
+        x, gates = x.chunk(2, dim=-1)
+        return x * F.gelu(gates)
+
+class QuickGELU(nn.Module):
+    def forward(self, x: torch.Tensor):
+        return x * torch.sigmoid(1.702 * x)
+
+class FeedForward(nn.Module):
+    def __init__(self, dim, mult=4):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.LayerNorm(dim),
+            nn.Linear(dim, dim * mult * 2),
+            GEGLU(),
+            nn.Linear(dim * mult, dim)
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class CrossAttention(nn.Module):
+    def __init
