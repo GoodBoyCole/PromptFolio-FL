@@ -162,4 +162,31 @@ class PromptTranslator(nn.Module):
             textemb_dim=512,
             device='cuda'
     ):
-    
+        super().__init__()
+        self.device = device
+        self.prompt_len = prompt_len
+        self.prompt_depth = prompt_depth
+        prompt_dim = prompt_dim
+        soft_prompt = torch.empty(prompt_len*prompt_depth, prompt_dim)
+        nn.init.normal_(soft_prompt, std=0.02)
+        self.soft_prompt = nn.Parameter(soft_prompt)
+
+        self.encoder = CrossAttention(
+            latent_dim=prompt_dim,
+            kv_dim=textemb_dim,
+            cross_heads= cross_heads,
+        )
+        if depth>0:
+            self.transformer = SelfAttention(depth=depth, latent_dim=prompt_dim,latent_heads = self_heads)
+
+        # self.vis_linear = nn.Linear(512,768)
+        self.depth = depth
+    def forward(
+            self,
+            text_emb,
+    ):
+        # first output is text prompt, second output is image prompt
+        prompt = self.encoder(text_emb, self.soft_prompt)
+        if self.depth>0:
+            prompt = self.transformer(prompt)
+        prompt = prompt.reshape(self.prompt_depth,self.pro
