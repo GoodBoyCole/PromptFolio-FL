@@ -189,4 +189,28 @@ class PromptTranslator(nn.Module):
         prompt = self.encoder(text_emb, self.soft_prompt)
         if self.depth>0:
             prompt = self.transformer(prompt)
-        prompt = prompt.reshape(self.prompt_depth,self.pro
+        prompt = prompt.reshape(self.prompt_depth,self.prompt_len,-1)
+        # vis_prompt = self.vis_linear(prompt)
+
+        return prompt,prompt
+
+
+class ImageEncoder(nn.Module):
+    def __init__(self, clip_model):
+        super().__init__()
+
+        self.conv1 = clip_model.conv1
+        self.class_embedding = clip_model.class_embedding
+        self.positional_embedding = clip_model.positional_embedding
+        self.ln_pre = clip_model.ln_pre
+        self.transformer = clip_model.transformer
+        self.ln_post = clip_model.ln_post
+        self.proj = clip_model.proj
+
+    def forward(self, x, vis_ctx=[]):
+        x = self.conv1(x)  # shape = [*, width, grid, grid]
+        x = x.reshape(x.shape[0], x.shape[1], -1)  # shape = [*, width, grid ** 2]
+        x = x.permute(0, 2, 1)  # shape = [*, grid ** 2, width]
+        x = torch.cat(
+            [self.class_embedding.to(x.dtype) + torch.zeros(x.shape[0], 1, x.shape[-1], dtype=x.dtype, device=x.device),
+             x], dim=1)  # shape = [*, g
