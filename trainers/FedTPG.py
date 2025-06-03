@@ -241,4 +241,28 @@ class TextEncoder(nn.Module):
     def forward(self, prompts, tokenized_prompts, text_ctx):
         x = prompts + self.positional_embedding.type(self.dtype)
         x = x.permute(1, 0, 2)  # NLD -> LND
-        x = self.transformer(x, text_ctx, Tr
+        x = self.transformer(x, text_ctx, True)
+        x = x.permute(1, 0, 2)  # LND -> NLD
+        x = self.ln_final(x).type(self.dtype)
+
+        # x.shape = [batch_size, n_ctx, transformer.width]
+        # take features from the eot embedding (eot_token is the highest number in each sequence)
+        x = x[torch.arange(x.shape[0]), tokenized_prompts.argmax(dim=-1)] @ self.text_projection
+
+        return x
+
+
+# class PromptLearner(nn.Module):
+#     def __init__(self, cfg, classnames, clip_model):
+#         super().__init__()
+#         n_cls = len(classnames)
+#         n_ctx = cfg.TRAINER.FedTPG.N_CTX
+#         ctx_depth = cfg.TRAINER.FedTPG.D_CTX
+#         self.meta_net = PromptTranslator(n_ctx, ctx_depth, depth=cfg.TRAINER.FedTPG.DEPTH)
+#         self.meta_net.half()
+#
+#         self.ctx_depth = ctx_depth
+#         self.n_ctx = n_ctx
+#         dtype = clip_model.dtype
+#         ctx_dim = clip_model.ln_final.weight.shape[0]
+#         self.N = cfg.TRA
