@@ -265,4 +265,25 @@ class TextEncoder(nn.Module):
 #         self.n_ctx = n_ctx
 #         dtype = clip_model.dtype
 #         ctx_dim = clip_model.ln_final.weight.shape[0]
-#         self.N = cfg.TRA
+#         self.N = cfg.TRAINER.PLOT.N
+#
+#         ctx_vectors = torch.empty(self.N, n_ctx, ctx_dim, dtype=dtype)
+#         nn.init.normal_(ctx_vectors, std=0.02)
+#         prompt_prefix = " ".join(["X"] * n_ctx)
+#
+#         classnames = [name.replace("_", " ") for name in classnames]
+#         name_lens = [len(_tokenizer.encode(name)) for name in classnames]
+#         prompts = [prompt_prefix + " " + name + "." for name in classnames]
+#         tokenized_prompts = torch.cat([clip.tokenize(p) for p in prompts])
+#         tokenized_prompts = tokenized_prompts.repeat(self.N, 1)
+#
+#         with torch.no_grad():
+#             embedding = clip_model.token_embedding(tokenized_prompts).type(dtype)
+#
+#         self.register_buffer("token_prefix", embedding[:, :1, :])
+#         self.register_buffer("token_suffix", embedding[:, 1 + n_ctx:, :])
+#
+#         self.ctx = nn.Parameter(ctx_vectors)
+#         self.n_cls = n_cls
+#         self.n_ctx = n_ctx
+#     
