@@ -286,4 +286,26 @@ class TextEncoder(nn.Module):
 #         self.ctx = nn.Parameter(ctx_vectors)
 #         self.n_cls = n_cls
 #         self.n_ctx = n_ctx
-#     
+#         self.tokenized_prompts = tokenized_prompts
+#         self.name_lens = name_lens
+#         self.class_token_position = cfg.TRAINER.PLOT.CLASS_TOKEN_POSITION
+#
+#     def forward(self):
+#         ctx = self.ctx
+#         print(ctx.shape)
+#         ctx = ctx.permute(1, 0, 2, 3).contiguous().view(self.N * self.n_cls, self.n_ctx, ctx.shape[3])
+#
+#         prefix = self.token_prefix
+#         suffix = self.token_suffix
+#
+#         if self.class_token_position == "end":
+#             prompts = torch.cat([prefix, ctx, suffix], dim=1)
+#         elif self.class_token_position == "middle":
+#             half_n_ctx = self.n_ctx // 2
+#             prompts = []
+#             for i in range(self.n_cls):
+#                 name_len = self.name_lens[i]
+#                 prefix_i = prefix[i: i + 1, :, :]
+#                 class_i = suffix[i: i + 1, :name_len, :]
+#                 suffix_i = suffix[i: i + 1, name_len:, :]
+#                 ctx_i_half1 = ctx[i: i + 1, 
