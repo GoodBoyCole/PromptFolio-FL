@@ -329,4 +329,30 @@ class TextEncoder(nn.Module):
 #
 #         return prompts
 
-class PromptLearner(nn.Modul
+class PromptLearner(nn.Module):
+    def __init__(self, cfg, classnames, clip_model):
+        super().__init__()
+        n_cls = len(classnames)
+        self.n_cls = n_cls
+
+        n_ctx = cfg.TRAINER.FedTPG.N_CTX
+        self.n_ctx = n_ctx
+
+        ctx_depth = cfg.TRAINER.FedTPG.D_CTX
+        self.ctx_depth = ctx_depth
+        self.N = cfg.TRAINER.PLOT.N
+
+        self.meta_net = PromptTranslator(n_ctx, ctx_depth, depth=cfg.TRAINER.FedTPG.DEPTH)
+        self.meta_net.half()
+
+
+        dtype = clip_model.dtype
+        ctx_dim = clip_model.ln_final.weight.shape[0]
+        ctx_vectors = torch.empty(self.N, n_ctx, ctx_dim, dtype=dtype)
+        nn.init.normal_(ctx_vectors, std=0.02)
+        prompt_prefix = " ".join(["X"] * n_ctx)
+
+        classnames = [name.replace("_", " ") for name in classnames]
+        name_lens = [len(_tokenizer.encode(name)) for name in classnames]
+        prompts = [prompt_prefix + " " + name + "." for name in classnames]
+        tokenized_prompts
