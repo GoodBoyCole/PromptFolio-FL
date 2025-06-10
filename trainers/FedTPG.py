@@ -355,4 +355,32 @@ class PromptLearner(nn.Module):
         classnames = [name.replace("_", " ") for name in classnames]
         name_lens = [len(_tokenizer.encode(name)) for name in classnames]
         prompts = [prompt_prefix + " " + name + "." for name in classnames]
-        tokenized_prompts
+        tokenized_prompts = torch.cat([clip.tokenize(p) for p in prompts])
+        tokenized_prompts = tokenized_prompts.repeat(self.N, 1)
+
+        with torch.no_grad():
+
+            embedding = clip_model.token_embedding(tokenized_prompts).type(dtype)
+
+        self.register_buffer("token_prefix", embedding[:, :1, :])
+        self.register_buffer("token_suffix", embedding[:, 1 + n_ctx:, :])
+
+        self.ctx = nn.Parameter(ctx_vectors)
+
+        self.tokenized_prompts = tokenized_prompts
+        self.name_lens = name_lens
+        self.class_token_position = cfg.TRAINER.PLOT.CLASS_TOKEN_POSITION
+
+    def forward(self, context_emb):
+        text_ctx, vis_ctx = self.meta_net(context_emb.unsqueeze(0))  # (n_ctx, ctx_dim) # self.ctx
+
+        return text_ctx, vis_ctx
+
+
+class CustomCLIP(nn.Module):
+    def __init__(self, cfg, classnames, clip_model):
+        super().__init__()
+        self.cfg = cfg
+        self.n_cls = len(classnames)
+        self.set_prompt_prefix()
+        self.prompt_le
