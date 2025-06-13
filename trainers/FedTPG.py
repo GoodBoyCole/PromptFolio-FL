@@ -383,4 +383,28 @@ class CustomCLIP(nn.Module):
         self.cfg = cfg
         self.n_cls = len(classnames)
         self.set_prompt_prefix()
-        self.prompt_le
+        self.prompt_learner = PromptLearner(cfg, classnames, clip_model)
+        self.tokenized_prompts = self.prompt_learner.tokenized_prompts
+        self.image_encoder = ImageEncoder(clip_model.visual)
+        self.text_encoder = TextEncoder(clip_model)
+        self.token_embedding = clip_model.token_embedding
+        self.logit_scale = clip_model.logit_scale
+        self.dtype = clip_model.dtype
+        self.device = torch.device("cuda:0")
+        self.device1 = torch.device("cuda")
+        self.N = cfg.TRAINER.PLOT.N
+        self.dataset = cfg.DATASET.NAME
+        self.frac = cfg.TRAINER.PROMPTFL.FRAC
+        self.clip_model_ = clip_model
+        self.classnames = classnames
+
+
+    def set_prompt_prefix(self):
+
+        n_ctx = self.cfg.TRAINER.FedTPG.N_CTX
+        # random initialization
+        self.n_ctx = n_ctx
+        self.prompt_prefix = " ".join(["X"] * n_ctx)
+
+        print(f'Initial context: "{self.prompt_prefix}"')
+        prin
