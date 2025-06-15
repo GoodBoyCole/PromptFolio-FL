@@ -407,4 +407,27 @@ class CustomCLIP(nn.Module):
         self.prompt_prefix = " ".join(["X"] * n_ctx)
 
         print(f'Initial context: "{self.prompt_prefix}"')
-        prin
+        print(f"Number of context words (tokens): {self.n_ctx}")
+
+    def get_tokenized_classnames(self, classnames):
+
+        prompts = [self.prompt_prefix + " " + name + "." for name in classnames]
+        tokenized_prompts = torch.cat([clip.tokenize(p) for p in prompts])
+        with torch.no_grad():
+            embedding = self.token_embedding(tokenized_prompts.to(self.device)).type(self.dtype)
+        # token_prefix = embedding[:, :1, :]  # SOS
+        # token_suffix = embedding[:, 1 + self.n_ctx:, :]  # CLS, EOS
+        return embedding, tokenized_prompts
+
+    def encode_image(self, image, vis_ctx):
+        return self.image_encoder(image.type(self.dtype))
+
+    def encode_text(self, classnames, text_features_):
+
+        context_emb = text_features_
+        prompt_vectors, tokenized_prompts = self.get_tokenized_classnames(classnames)
+
+        text_ctx, vis_ctx = self.prompt_learner(context_emb)
+
+        prompt_vectors = torch.cat(
+        
