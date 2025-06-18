@@ -454,4 +454,32 @@ class CustomCLIP(nn.Module):
 
         with torch.no_grad():
             text_features_ = self.clip_model_.encode_text(prompts_)
-            text_featu
+            text_features_ = text_features_ / text_features_.norm(dim=-1, keepdim=True)
+
+        text_features, vis_ctx = self.encode_text(classnames, text_features_)
+        image_features = self.encode_image(image, vis_ctx)
+
+        image_features = image_features / image_features.norm(dim=-1, keepdim=True)
+        text_features = text_features / text_features.norm(dim=-1, keepdim=True)
+
+        logit_scale = self.logit_scale.exp()
+        logits = logit_scale * image_features @ text_features.t()
+
+        return logits
+
+
+class FedTPG(TrainerX):
+    def check_cfg(self, cfg):
+        assert cfg.TRAINER.FedTPG.PREC in ["fp16", "fp32", "amp"]
+
+    def build_model(self):
+        cfg = self.cfg
+        classnames = self.dm.dataset.classnames
+
+        print(f"Loading CLIP (backbone: {cfg.MODEL.BACKBONE.NAME})")
+        clip_model = load_clip_to_cpu(cfg)
+
+        if cfg.TRAINER.FedTPG.PREC == "fp32" or cfg.TRAINER.FedTPG.PREC == "amp":
+            clip_model.float()
+
+        print("Building custom CLIP")
