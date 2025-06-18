@@ -430,4 +430,28 @@ class CustomCLIP(nn.Module):
         text_ctx, vis_ctx = self.prompt_learner(context_emb)
 
         prompt_vectors = torch.cat(
-        
+            [
+                prompt_vectors[:, :1],  # (dim0, 1, dim)
+                text_ctx[0].unsqueeze(0).expand(prompt_vectors.shape[0], -1, -1),  # (dim0, n_ctx, dim)
+                prompt_vectors[:, 1 + text_ctx.shape[1]:],  # (dim0, *, dim)
+            ],
+            dim=1,
+        )
+        if len(text_ctx) > 1:
+            text_ctx = text_ctx[1:]
+        else:
+            text_ctx = []
+        text_features = self.text_encoder(prompt_vectors, tokenized_prompts, text_ctx)
+        return text_features, vis_ctx
+
+    def forward(self, image):
+        classnames = self.classnames
+        classnames = [name.replace("_", " ") for name in classnames]
+        prompts_ = classnames
+        # print(f"Prompts: {prompts_}")
+        prompts_ = torch.cat([clip.tokenize(p) for p in prompts_])
+        prompts_ = prompts_.cuda()
+
+        with torch.no_grad():
+            text_features_ = self.clip_model_.encode_text(prompts_)
+            text_featu
