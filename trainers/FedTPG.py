@@ -483,3 +483,25 @@ class FedTPG(TrainerX):
             clip_model.float()
 
         print("Building custom CLIP")
+        self.model = CustomCLIP(cfg, classnames, clip_model)
+
+        print("Turning off gradients in both the image and the text encoder")
+        for name, param in self.model.named_parameters():
+            if "prompt_learner" not in name:
+                param.requires_grad_(False)
+
+        if cfg.MODEL.INIT_WEIGHTS:
+            load_pretrained_weights(self.model.prompt_learner, cfg.MODEL.INIT_WEIGHTS)
+
+        if cfg.DATASET.NAME == "ImageNet":
+            self.device = torch.device("cuda:0")
+            device1 = torch.device("cuda")
+            self.model.to(self.device)
+            self.model.text_encoder.to(device1)
+            self.model.text_encoder = nn.DataParallel(self.model.text_encoder)
+        else:
+            self.model.to(self.device)
+
+        self.optim = build_optimizer(self.model.prompt_learner, cfg.OPTIM)
+        self.sched = build_lr_scheduler(self.optim, cfg.OPTIM)
+        self.register_model("prompt_learner", self.model.prompt_learner, self.optim, 
