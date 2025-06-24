@@ -504,4 +504,33 @@ class FedTPG(TrainerX):
 
         self.optim = build_optimizer(self.model.prompt_learner, cfg.OPTIM)
         self.sched = build_lr_scheduler(self.optim, cfg.OPTIM)
-        self.register_model("prompt_learner", self.model.prompt_learner, self.optim, 
+        self.register_model("prompt_learner", self.model.prompt_learner, self.optim, self.sched)
+
+        self.scaler = GradScaler() if cfg.TRAINER.FedTPG.PREC == "amp" else None
+
+    def forward_backward(self, batch):
+        image, label = self.parse_batch_train(batch)
+
+        prec = self.cfg.TRAINER.FedTPG.PREC
+        if prec == "amp":
+            with autocast():
+                output = self.model(image)
+                loss = F.cross_entropy(output, label)
+            self.optim.zero_grad()
+            self.scaler.scale(loss).backward()
+            self.scaler.step(self.optim)
+            self.scaler.update()
+        else:
+            output = self.model(image)
+            loss = F.cross_entropy(output, label)
+            self.model_backward_and_update(loss)
+
+        loss_summary = {
+            "loss": loss.item(),
+            "acc": compute_accuracy(output, label)[0].item(),
+        }
+
+        if (self.batch_idx + 1) == self.num_batches:
+            self.update_lr()
+
+        return 
