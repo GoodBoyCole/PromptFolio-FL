@@ -564,4 +564,10 @@ class FedTPG(TrainerX):
             epoch = checkpoint["epoch"]
 
             if "token_prefix" in state_dict:
-                de
+                del state_dict["token_prefix"]
+
+            if "token_suffix" in state_dict:
+                del state_dict["token_suffix"]
+
+            print(f"Loading weights to {name} from {model_path} (epoch = {epoch})")
+            self._models[name].load_state_dict(state_dict, strict=False)
