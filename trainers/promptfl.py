@@ -139,3 +139,31 @@ class PromptLearner(nn.Module):
 
         print(f'Initial context: "{prompt_prefix}"')
         print(f"Number of context words (tokens): {n_ctx}")
+
+    def forward(self):
+        ctx = self.ctx
+        if not self.class_specific_context:
+            ctx = ctx.unsqueeze(0).expand(self.n_cls, -1, -1)
+            ctx = ctx.contiguous().view(self.n_cls, self.n_ctx, ctx.shape[-1])
+
+        prefix = self.token_prefix
+        suffix = self.token_suffix
+
+        if self.class_token_position == "end":
+            prompts = torch.cat(
+                [
+                    prefix,  # (n_cls, 1, dim)
+                    ctx,  # (n_cls, n_ctx, dim)
+                    suffix,  # (n_cls, *, dim)
+                ],
+                dim=1,
+            )
+
+        elif self.class_token_position == "middle":
+            half_n_ctx = self.n_ctx // 2
+            prompts = []
+            for i in range(self.n_cls):
+                name_len = self.name_lens[i]
+                prefix_i = prefix[i: i + 1, :, :]
+                class_i = suffix[i: i + 1, :name_len, :]
+      
