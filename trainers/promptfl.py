@@ -117,4 +117,25 @@ class PromptLearner(nn.Module):
         if self.class_specific_context:
             if ctx_init:
                 ctx_vectors = embedding[:, 1: 1 + n_ctx, :]  # n_cls * n_ctx * ctx_dim
-            el
+            else:
+                ctx_vectors = torch.empty(n_cls, n_ctx, ctx_dim, dtype=dtype)
+                nn.init.normal_(ctx_vectors, std=0.02)
+            ctx = nn.Parameter(ctx_vectors)  # n_cls * n_ctx * ctx_dim
+        else:
+            if ctx_init:
+                ctx_vectors = embedding[0, 1: 1 + n_ctx, :]  # n_cls * n_ctx * ctx_dim -> n_ctx * ctx_dim
+            else:
+                ctx_vectors = torch.empty(n_ctx, ctx_dim, dtype=dtype)
+                nn.init.normal_(ctx_vectors, std=0.02)
+            ctx = nn.Parameter(ctx_vectors)  # n_ctx * ctx_dim
+
+
+        self.ctx = ctx
+
+        self.n_cls = n_cls
+        self.n_ctx = n_ctx
+        self.tokenized_prompts = tokenized_prompts  # This tokenized_prompt only used to locate the end of the sentence.
+        self.class_token_position = cfg.TRAINER.PLOT.CLASS_TOKEN_POSITION
+
+        print(f'Initial context: "{prompt_prefix}"')
+        print(f"Number of context words (tokens): {n_ctx}")
