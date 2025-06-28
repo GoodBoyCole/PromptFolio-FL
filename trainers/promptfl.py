@@ -95,4 +95,26 @@ class PromptLearner(nn.Module):
 
 
         if ctx_init:
-            ctx_init = ctx_init.replac
+            ctx_init = ctx_init.replace("_", " ")
+            n_ctx = len(ctx_init.split(" "))
+            prompt_prefix = ctx_init
+        else:
+            n_ctx = cfg.TRAINER.PLOT.N_CTX
+            prompt_prefix = " ".join(["X"] * n_ctx)
+
+        if ctx_suf_init:
+            prompt_suffix = " " + ctx_suf_init
+        else:
+            prompt_suffix = ""
+
+        prompts = [prompt_prefix + " " + name + prompt_suffix + "." for name in classnames]
+        tokenized_prompts = torch.cat([clip.tokenize(p) for p in prompts])
+        with torch.no_grad():
+            embedding = clip_model.token_embedding(tokenized_prompts).type(dtype)
+        self.register_buffer("token_prefix", embedding[:, :1, :])  # SOS
+        self.register_buffer("token_suffix", embedding[:, 1 + n_ctx:, :])
+
+        if self.class_specific_context:
+            if ctx_init:
+                ctx_vectors = embedding[:, 1: 1 + n_ctx, :]  # n_cls * n_ctx * ctx_dim
+            el
