@@ -68,4 +68,31 @@ class TextEncoder(nn.Module):
 
         # x.shape = [batch_size, n_ctx, transformer.width]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        x = x[torch.arange(x.shape[0]), 
+        x = x[torch.arange(x.shape[0]), tokenized_prompts.argmax(dim=-1)] @ self.text_projection
+
+        return x
+
+
+class PromptLearner(nn.Module):
+    def __init__(self, cfg, classnames, clip_model):
+        super().__init__()
+        n_cls = len(classnames)
+        ctx_init = cfg.TRAINER.PROMPTFL.CTX_INIT
+        # ctx_init = None
+        # ctx_suf_init = "texture"
+        ctx_suf_init = None
+        dtype = clip_model.dtype
+        ctx_dim = clip_model.ln_final.weight.shape[0]
+        clip_imsize = clip_model.visual.input_resolution
+        cfg_imsize = cfg.INPUT.SIZE[0]
+        self.class_specific_context = cfg.TRAINER.PROMPTFL.CSC
+        assert cfg_imsize == clip_imsize, f"cfg_imsize ({cfg_imsize}) must equal to clip_imsize ({clip_imsize})"
+
+        classnames = [name.replace("_", " ") for name in classnames]
+
+        # Calculate the length of classname prompt
+        self.name_lens = [len(_tokenizer.encode(name)) for name in classnames]
+
+
+        if ctx_init:
+            ctx_init = ctx_init.replac
