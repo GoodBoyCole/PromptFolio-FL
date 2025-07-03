@@ -244,4 +244,28 @@ class PromptFL(TrainerX):
         cfg = self.cfg
         classnames = self.dm.dataset.classnames
 
-        print(f"Loading CLIP (backbone: {cfg.MODEL.BA
+        print(f"Loading CLIP (backbone: {cfg.MODEL.BACKBONE.NAME})")
+        clip_model = load_clip_to_cpu(cfg)
+
+        if cfg.TRAINER.PROMPTFL.PREC == "fp32" or cfg.TRAINER.PROMPTFL.PREC == "amp":
+            # CLIP's default precision is fp16
+            clip_model.float()
+
+        print("Building custom CLIP")
+        self.model = CustomCLIP(cfg, classnames, clip_model)
+
+        print("Turning off gradients in both the image and the text encoder")
+        for name, param in self.model.named_parameters():
+            # print(name,":",param.size())
+            if "prompt_learner" in name:
+                param.requires_grad_(True)
+            else:
+                param.requires_grad_(False)
+        print(f"# params: {count_num_param(self.model):,}")
+        print(f"# prompt learner params: {count_num_param(self.model.prompt_learner):,}")
+
+
+        if cfg.MODEL.INIT_WEIGHTS:
+            load_pretrained_weights(self.model.prompt_learner, cfg.MODEL.INIT_WEIGHTS)
+
+        se
