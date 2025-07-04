@@ -268,4 +268,23 @@ class PromptFL(TrainerX):
         if cfg.MODEL.INIT_WEIGHTS:
             load_pretrained_weights(self.model.prompt_learner, cfg.MODEL.INIT_WEIGHTS)
 
-        se
+        self.model.to(self.device)
+        # NOTE: only give prompt_learner to the optimizer
+        from itertools import chain
+        self.optim = build_optimizer(self.model.prompt_learner.parameters(),
+                                     cfg.OPTIM)
+        self.sched = build_lr_scheduler(self.optim,
+                                        cfg.OPTIM)
+        self.register_model("prompt_learner",
+                            self.model.prompt_learner,
+                            self.optim,
+                            self.sched)
+
+        self.scaler = GradScaler() if cfg.TRAINER.PROMPTFL.PREC == "amp" else None
+
+        # Note that multi-gpu training could be slow because CLIP's size is
+        # big, which slows down the copy operation in DataParallel
+        # os.environ["CUDA_VISIBLE_DEVICES"] = "0,3,2,1"
+        # device_count = torch.cuda.device_count()
+        # if device_count > 1:
+        #     print(f"Multiple GPUs detected
