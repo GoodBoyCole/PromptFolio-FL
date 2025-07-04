@@ -287,4 +287,25 @@ class PromptFL(TrainerX):
         # os.environ["CUDA_VISIBLE_DEVICES"] = "0,3,2,1"
         # device_count = torch.cuda.device_count()
         # if device_count > 1:
-        #     print(f"Multiple GPUs detected
+        #     print(f"Multiple GPUs detected (n_gpus={device_count}), use all of them!")
+            # self.model = nn.DataParallel(self.model, device_ids=[1])
+
+    def forward_backward(self, batch, global_weight=None, fedprox=False, mu=0.5):
+        image, label = self.parse_batch_train(batch)
+        prec = self.cfg.TRAINER.PROMPTFL.PREC
+        if prec == "amp":
+            with autocast():
+                output = self.model(image)
+                loss = F.cross_entropy(output, label)
+            self.optim.zero_grad()
+            self.scaler.scale(loss).backward()
+            self.scaler.step(self.optim)
+            self.scaler.update()
+        else:
+            output = self.model(image)
+            loss = F.cross_entropy(output, label)
+            if fedprox:
+                model_weight = self.model.state_dict()
+                fed_prox_reg = (mu / 2) * torch.norm((model_weight['prompt_learner.ctx'] - global_weight['prompt_learner.ctx'])) ** 2
+                loss += fed_prox_reg
+           
