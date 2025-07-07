@@ -1,3 +1,4 @@
+
 import os.path as osp
 import os
 import time
@@ -49,6 +50,13 @@ def load_clip_to_cpu(cfg):
 
     return model
 
+class TextProjectionModule(nn.Module):
+    def __init__(self, text_projection):
+        super().__init__()
+        self.text_projection = nn.Parameter(text_projection)
+
+    def forward(self):
+        return self.text_projection
 
 class TextEncoder(nn.Module):
     def __init__(self, clip_model):
@@ -56,7 +64,7 @@ class TextEncoder(nn.Module):
         self.transformer = clip_model.transformer
         self.positional_embedding = clip_model.positional_embedding
         self.ln_final = clip_model.ln_final
-        self.text_projection = clip_model.text_projection
+        self.text_projection_module = TextProjectionModule(clip_model.text_projection)
         self.dtype = clip_model.dtype
 
     def forward(self, prompts, tokenized_prompts):
@@ -68,7 +76,7 @@ class TextEncoder(nn.Module):
 
         # x.shape = [batch_size, n_ctx, transformer.width]
         # take features from the eot embedding (eot_token is the highest number in each sequence)
-        x = x[torch.arange(x.shape[0]), tokenized_prompts.argmax(dim=-1)] @ self.text_projection
+        x = x[torch.arange(x.shape[0]), tokenized_prompts.argmax(dim=-1)] @ self.text_projection_module()
 
         return x
 
@@ -235,7 +243,7 @@ class CustomCLIP(nn.Module):
 
 
 # @TRAINER_REGISTRY.register("PromptFL")
-class PromptFL(TrainerX):
+class PromptFLFT(TrainerX):
 
     def check_cfg(self, cfg):
         assert cfg.TRAINER.PROMPTFL.PREC in ["fp16", "fp32", "amp"]
@@ -257,7 +265,7 @@ class PromptFL(TrainerX):
         print("Turning off gradients in both the image and the text encoder")
         for name, param in self.model.named_parameters():
             # print(name,":",param.size())
-            if "prompt_learner" in name:
+            if "prompt_learner" in name or "text_encoder.text_projection_module" in name:
                 param.requires_grad_(True)
             else:
                 param.requires_grad_(False)
@@ -279,6 +287,15 @@ class PromptFL(TrainerX):
                             self.model.prompt_learner,
                             self.optim,
                             self.sched)
+        # this step is important to trainable parameters
+        self.optim_proj = build_optimizer(self.model.text_encoder.text_projection_module.parameters(),
+                                          cfg.OPTIM)
+        self.sched_proj = build_lr_scheduler(self.optim_proj,
+                                             cfg.OPTIM)
+        self.register_model("text_projection_module",
+                            self.model.text_encoder.text_projection_module,
+                            self.optim_proj,
+                            self.sched_proj)
 
         self.scaler = GradScaler() if cfg.TRAINER.PROMPTFL.PREC == "amp" else None
 
@@ -298,16 +315,14 @@ class PromptFL(TrainerX):
                 output = self.model(image)
                 loss = F.cross_entropy(output, label)
             self.optim.zero_grad()
+            self.optim_proj.zero_grad()
             self.scaler.scale(loss).backward()
             self.scaler.step(self.optim)
+            self.scaler.step(self.optim_proj)
             self.scaler.update()
         else:
             output = self.model(image)
             loss = F.cross_entropy(output, label)
-            if fedprox:
-                model_weight = self.model.state_dict()
-                fed_prox_reg = (mu / 2) * torch.norm((model_weight['prompt_learner.ctx'] - global_weight['prompt_learner.ctx'])) ** 2
-                loss += fed_prox_reg
             self.model_backward_and_update(loss)
 
         loss_summary = {
@@ -360,34 +375,5 @@ class PromptFL(TrainerX):
             print("Loading weights to {} " 'from "{}" (epoch = {})'.format(name, model_path, epoch))
             # set strict=False
             self._models[name].load_state_dict(state_dict, strict=False)
-
-# @TRAINER_REGISTRY.register("Baseline")
-class Baseline(TrainerX):
-    """Supervised Baseline."""
-
-    def forward_backward(self, batch):
-        input, label = self.parse_batch_train(batch)
-        output = self.model(input)
-        loss = F.cross_entropy(output, label)
-        self.model_backward_and_update(loss)
-
-        loss_summary = {
-            "loss": loss.item(),
-            "acc": compute_accuracy(output, label)[0].item(),
-        }
-
-        if (self.batch_idx + 1) == self.num_batches:
-            self.update_lr()
-
-        return loss_summary
-
-    def parse_batch_train(self, batch):
-        input = batch["img"]
-        label = batch["label"]
-        input = input.to(self.device)
-        label = label.to(self.device)
-        return input, label
-
-
 
 
