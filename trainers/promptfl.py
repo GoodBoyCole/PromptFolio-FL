@@ -308,4 +308,39 @@ class PromptFL(TrainerX):
                 model_weight = self.model.state_dict()
                 fed_prox_reg = (mu / 2) * torch.norm((model_weight['prompt_learner.ctx'] - global_weight['prompt_learner.ctx'])) ** 2
                 loss += fed_prox_reg
-           
+            self.model_backward_and_update(loss)
+
+        loss_summary = {
+            "loss": loss.item(),
+            "acc": compute_accuracy(output, label)[0].item(),
+        }
+
+        if (self.batch_idx + 1) == self.num_batches:
+            self.update_lr()
+
+        return loss_summary
+
+    def parse_batch_train(self, batch):
+        input = batch["img"]
+        label = batch["label"]
+        input = input.to(self.device)
+        label = label.to(self.device)
+        return input, label
+
+    def load_model(self, directory, epoch=None):
+        if not directory:
+            print("Note that load_model() is skipped as no pretrained model is given")
+            return
+
+        names = self.get_model_names()
+
+        # By default, the best model is loaded
+        model_file = "model-best.pth.tar"
+
+        if epoch is not None:
+            model_file = "model.pth.tar-" + str(epoch)
+
+        for name in names:
+            model_path = osp.join(directory, name, model_file)
+
+            if not osp.exists(model_path
