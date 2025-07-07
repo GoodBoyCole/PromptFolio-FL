@@ -343,4 +343,30 @@ class PromptFL(TrainerX):
         for name in names:
             model_path = osp.join(directory, name, model_file)
 
-            if not osp.exists(model_path
+            if not osp.exists(model_path):
+                raise FileNotFoundError('Model bash main.sh caltech101 rn50_ep50 end 16 1 Falsenot found at "{}"'.format(model_path))
+
+            checkpoint = load_checkpoint(model_path)
+            state_dict = checkpoint["state_dict"]
+            epoch = checkpoint["epoch"]
+
+            # Ignore fixed token vectors
+            if "token_prefix" in state_dict:
+                del state_dict["token_prefix"]
+
+            if "token_suffix" in state_dict:
+                del state_dict["token_suffix"]
+
+            print("Loading weights to {} " 'from "{}" (epoch = {})'.format(name, model_path, epoch))
+            # set strict=False
+            self._models[name].load_state_dict(state_dict, strict=False)
+
+# @TRAINER_REGISTRY.register("Baseline")
+class Baseline(TrainerX):
+    """Supervised Baseline."""
+
+    def forward_backward(self, batch):
+        input, label = self.parse_batch_train(batch)
+        output = self.model(input)
+        loss = F.cross_entropy(output, label)
+        self.model_b
