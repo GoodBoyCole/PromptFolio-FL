@@ -57,4 +57,24 @@ class PromptFLFedAMP(PromptFL):
             global_list.append(self.local_info[idx]["prompt_learner.ctx"])
 
         def attention_func(dist):
-            return 1 
+            return 1 - torch.exp(dist / sigma)
+
+        for idx in idx_users:
+            sum_weight = 0
+            sum_weight_list = []
+            for inner_idx in idx_users:
+                if inner_idx != idx:
+                    weight = attention_func(torch.norm(self.local_info[idx]["prompt_learner.ctx"] - self.local_info[inner_idx]["prompt_learner.ctx"],
+                                                       p=2))
+                    sum_weight += weight
+                    sum_weight_list.append(weight * self.local_info[inner_idx]["prompt_learner.ctx"])
+            self.local_info[idx]['u'] = ((1 - sum_weight) * self.local_info[idx]["prompt_learner.ctx"]
+                                         + sum(sum_weight_list))
+
+
+    def fed_download_model(self, idx):
+        self.model.load_state_dict(self.local_info[idx], strict=False)
+        if "u" in self.local_info[idx] and self.local_info[idx]["u"] is not None:
+            self.u = self.local_info[idx]["u"]
+        else:
+           
