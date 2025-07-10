@@ -77,4 +77,7 @@ class PromptFLFedAMP(PromptFL):
         if "u" in self.local_info[idx] and self.local_info[idx]["u"] is not None:
             self.u = self.local_info[idx]["u"]
         else:
-           
+            self.u = None
+
+
+
